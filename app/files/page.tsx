@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Swal from 'sweetalert2';
 import Sidebar from "../components/Sidebar";
 import PageHeader from "../components/files/PageHeader";
 import Breadcrumb from "../components/files/Breadcrumb";
@@ -127,29 +128,50 @@ export default function FilesPage() {
   const [files, setFiles] = useState<FileItem[]>(allFilesData);
 
   const toggleDeleteStatus = (itemPath: string[]) => {
-    const updateItem = (items: FileItem[], path: string[], depth: number): FileItem[] => {
-      return items.map(item => {
-        if (path[depth] === item.name) {
-          if (depth === path.length - 1) {
-            return {
-              ...item,
-              delete_status: true,
-              deleted_at: new Date()
-            };
-          } else if (item.children) {
-            return {
-              ...item,
-              children: updateItem(item.children, path, depth + 1)
-            };
-          }
-        }
-        return item;
-      });
-    };
-    
-    setFiles(updateItem(files, itemPath, 0));
-    setOpenMenuIndex(null);
-    setOpenRecommendedMenuIndex(null);
+    Swal.fire({
+      title: 'คุณแน่ใจหรือไม่?',
+      text: "คุณต้องการย้ายไฟล์นี้ไปถังขยะใช่หรือไม่",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'ลบ',
+      cancelButtonText: 'ยกเลิก'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const updateItem = (items: FileItem[], path: string[], depth: number): FileItem[] => {
+          return items.map(item => {
+            if (path[depth] === item.name) {
+              if (depth === path.length - 1) {
+                return {
+                  ...item,
+                  delete_status: true,
+                  deleted_at: new Date()
+                };
+              } else if (item.children) {
+                return {
+                  ...item,
+                  children: updateItem(item.children, path, depth + 1)
+                };
+              }
+            }
+            return item;
+          });
+        };
+        
+        setFiles(updateItem(files, itemPath, 0));
+        setOpenMenuIndex(null);
+        setOpenRecommendedMenuIndex(null);
+
+        Swal.fire({
+          icon: 'success',
+          title: 'ลบสำเร็จ!',
+          text: 'ไฟล์ถูกย้ายไปถังขยะแล้ว',
+          showConfirmButton: false,
+          timer: 1500
+        });
+      }
+    });
   };
 
   const toggleRecommendStatus = (itemPath: string[]) => {
@@ -175,6 +197,14 @@ export default function FilesPage() {
     setFiles(updateItem(files, itemPath, 0));
     setOpenMenuIndex(null);
     setOpenRecommendedMenuIndex(null);
+
+    Swal.fire({
+      icon: 'success',
+      title: 'สำเร็จ',
+      text: 'ปรับปรุงสถานะแนะนำเรียบร้อยแล้ว',
+      showConfirmButton: false,
+      timer: 1500
+    });
   };
 
   const getCurrentItems = (): FileItem[] => {

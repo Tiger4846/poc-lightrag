@@ -3,16 +3,52 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent } from "react";
+import Swal from 'sweetalert2';
 import AuthLayout from "../components/auth/AuthLayout";
-
+import { useState } from "react";
+import axios from "axios";
 export default function LoginPage() {
   const router = useRouter();
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const [userdata , setUserdata] = useState({
+    email : "",
+    password : ""
+  });
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // For this prototype, we just redirect to the files page.
-    router.push("/files");
+try {
+  const response = await axios.post('/api/users/login', {
+     email: userdata.email,
+     password: userdata.password
+  });
+
+  if (response.status === 200 || response.data.status === 200) {
+      Swal.fire({
+          icon: 'success',
+          title: 'เข้าสู่ระบบสำเร็จ',
+          timer: 1500
+      }).then(() => {
+          router.push("/files");
+      });
+  } 
+  } catch (error : any) {
+      Swal.fire({
+          icon: 'error',
+          title: 'เข้าสู่ระบบไม่สำเร็จ',
+          text: error.response?.data?.error || 'กรุณาตรวจสอบข้อมูล',
+      });
+    }
+    };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setUserdata((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
   };
+
+    
 
   const footerLink = (
     <>
@@ -46,6 +82,7 @@ export default function LoginPage() {
               required
               className="relative block w-full rounded-t-md border-0 p-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-red-600 sm:text-sm sm:leading-6 dark:bg-zinc-900 dark:text-white dark:ring-gray-700 dark:focus:ring-red-500"
               placeholder="Email address"
+              onChange={handleInputChange}
             />
           </div>
           <div>
@@ -60,6 +97,7 @@ export default function LoginPage() {
               required
               className="relative block w-full rounded-b-md border-0 p-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-red-600 sm:text-sm sm:leading-6 dark:bg-zinc-900 dark:text-white dark:ring-gray-700 dark:focus:ring-red-500"
               placeholder="Password"
+              onChange={handleInputChange}
             />
           </div>
         </div>
@@ -71,6 +109,7 @@ export default function LoginPage() {
               name="remember-me"
               type="checkbox"
               className="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-600"
+              onChange={handleInputChange}
             />
             <label
               htmlFor="remember-me"
