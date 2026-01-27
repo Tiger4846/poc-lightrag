@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 import { generateToken } from '@/lib/auth/jwt';
 
 
-
+// api ล็อกอินผู้ใช้
 export async function POST(request: NextRequest) {
     try{
         const body = await request.json();

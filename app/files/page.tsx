@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import Swal from 'sweetalert2';
 import Sidebar from "../components/Sidebar";
 import PageHeader from "../components/files/PageHeader";
@@ -8,126 +9,78 @@ import Breadcrumb from "../components/files/Breadcrumb";
 import FileCard from "../components/files/FileCard";
 import FileListItem from "../components/files/FileListItem";
 import { FileItem } from "../types/file";
+import { buildFileTree } from "@/lib/utils/fileMapper";
 
 export default function FilesPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [openMenuIndex, setOpenMenuIndex] = useState<number | null>(null);
   const [openRecommendedMenuIndex, setOpenRecommendedMenuIndex] = useState<number | null>(null);
   const [currentPath, setCurrentPath] = useState<string[]>([]);
+  const [files, setFiles] = useState<FileItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const nameuser = localStorage.getItem('userName') || 'User';
   
-  const allFilesData: FileItem[] = [
-    { 
-      name: "งานบุคลิ่น", 
-      owner: "Waewpan", 
-      date: "12 ธ.ค. 2568",
-      type: "folder",
-      recommend_status: false,
-      delete_status: false,
-      deleted_at: null,
-      children: [
-        { name: "ประกาศรับสมัคร", owner: "Waewpan", date: "10 ธ.ค. 2568", type: "folder", recommend_status: false, delete_status: false, deleted_at: null, children: [
-          { name: "ประกาศรับสมัคร_2568.pdf", owner: "Waewpan", date: "8 ธ.ค. 2568", type: "file", fileType: "pdf", recommend_status: true, delete_status: false, deleted_at: null },
-          { name: "เอกสารแนบ.pdf", owner: "Waewpan", date: "8 ธ.ค. 2568", type: "file", fileType: "pdf", recommend_status: false, delete_status: false, deleted_at: null },
-        ]},
-        { name: "ใบสมัคร.pdf", owner: "Waewpan", date: "9 ธ.ค. 2568", type: "file", fileType: "pdf", recommend_status: true, delete_status: false, deleted_at: null },
-        { name: "รูปถ่าย.jpg", owner: "Waewpan", date: "9 ธ.ค. 2568", type: "file", fileType: "image", recommend_status: true, delete_status: false, deleted_at: null },
-      ]
-    },
-    { 
-      name: "งานวิสสัตการ", 
-      owner: "Waewpan", 
-      date: "12 ธ.ค. 2568",
-      type: "folder",
-      recommend_status: false,
-      delete_status: false,
-      deleted_at: null,
-      children: [
-        { name: "เอกสารภาคต้น", owner: "Waewpan", date: "5 ธ.ค. 2568", type: "folder", recommend_status: false, delete_status: false, deleted_at: null, children: [
-          { name: "รายงานผล_ภาคต้น.doc", owner: "Waewpan", date: "3 ธ.ค. 2568", type: "file", fileType: "doc", recommend_status: false, delete_status: false, deleted_at: null },
-        ]},
-        { name: "เอกสารภาคปลาย", owner: "Waewpan", date: "11 ธ.ค. 2568", type: "folder", recommend_status: false, delete_status: false, deleted_at: null, children: [
-          { name: "รายงานผล_ภาคปลาย.doc", owner: "Waewpan", date: "10 ธ.ค. 2568", type: "file", fileType: "doc", recommend_status: false, delete_status: false, deleted_at: null },
-        ]},
-      ]
-    },
-    { 
-      name: "งานและแนวทับก้รับหาง", 
-      owner: "Waewpan", 
-      date: "12 ธ.ค. 2568",
-      type: "folder",
-      recommend_status: false,
-      delete_status: false,
-      deleted_at: null,
-      children: [
-        { name: "รายงาน_2568.pdf", owner: "Waewpan", date: "11 ธ.ค. 2568", type: "file", fileType: "pdf", recommend_status: false, delete_status: false, deleted_at: null },
-        { name: "สรุปผล.txt", owner: "Waewpan", date: "11 ธ.ค. 2568", type: "file", fileType: "txt", recommend_status: false, delete_status: false, deleted_at: null },
-      ]
-    },
-    { 
-      name: "งานวีึกรรมบสิต", 
-      owner: "Waewpan", 
-      date: "12 ธ.ค. 2568",
-      type: "folder",
-      recommend_status: false,
-      delete_status: false,
-      deleted_at: null,
-      children: []
-    },
-    { 
-      name: "งานทุน ทศธ", 
-      owner: "Waewpan", 
-      date: "12 ธ.ค. 2568",
-      type: "folder",
-      recommend_status: false,
-      delete_status: false,
-      deleted_at: null,
-      children: [
-        { name: "ทุนการศึกษา", owner: "Waewpan", date: "7 ธ.ค. 2568", type: "folder", recommend_status: false, delete_status: false, deleted_at: null, children: [
-          { name: "รายชื่อผู้สมัคร.pdf", owner: "Waewpan", date: "5 ธ.ค. 2568", type: "file", fileType: "pdf", recommend_status: false, delete_status: false, deleted_at: null },
-          { name: "เกณฑ์การพิจารณา.doc", owner: "Waewpan", date: "5 ธ.ค. 2568", type: "file", fileType: "doc", recommend_status: false, delete_status: false, deleted_at: null },
-        ]},
-      ]
-    },
-    { 
-      name: "งานหอทิึก", 
-      owner: "Waewpan", 
-      date: "12 ธ.ค. 2568",
-      type: "folder",
-      recommend_status: false,
-      delete_status: false,
-      deleted_at: null,
-      children: []
-    },
-    { 
-      name: "การสอบทางวิึกศ์นูม", 
-      owner: "Waewpan", 
-      date: "6 ธ.ค. 2567",
-      type: "folder",
-      recommend_status: false,
-      delete_status: false,
-      deleted_at: null,
-      children: [
-        { name: "ตารางสอบ.pdf", owner: "Waewpan", date: "4 ธ.ค. 2567", type: "file", fileType: "pdf", recommend_status: false, delete_status: true, deleted_at: new Date("2024-12-01") },
-      ]
-    },
-    { 
-      name: "งานลงทะเบีย", 
-      owner: "Waewpan", 
-      date: "6 ธ.ค. 2567",
-      type: "folder",
-      recommend_status: false,
-      delete_status: false,
-      deleted_at: null,
-      children: [
-        { name: "คู่มือลงทะเบียน.pdf", owner: "Waewpan", date: "1 ธ.ค. 2567", type: "file", fileType: "pdf", recommend_status: false, delete_status: false, deleted_at: null },
-        { name: "ตารางเรียน.jpg", owner: "Waewpan", date: "1 ธ.ค. 2567", type: "file", fileType: "image", recommend_status: false, delete_status: false, deleted_at: null },
-      ]
-    },
-  ];
+  // โหลดข้อมูลจาก API
+  useEffect(() => {
+    const fetchFiles = async () => {
+      try {
+        setLoading(true);
+        Swal.fire({
+          title: 'กำลังโหลด...',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
 
-  const [files, setFiles] = useState<FileItem[]>(allFilesData);
+        const token = localStorage.getItem('token');
+        if (!token) {
+          Swal.fire({
+            icon: 'error',
+            title: 'กรุณาเข้าสู่ระบบ',
+            text: 'คุณต้องเข้าสู่ระบบก่อนเข้าถึงหน้านี้',
+          });
+          window.location.href = '/login';
+          return;
+        }
 
-  const toggleDeleteStatus = (itemPath: string[]) => {
+        const response = await axios.get('/api/files', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        const fileTree = buildFileTree(response.data.files);
+        setFiles(fileTree);
+        Swal.close();
+      } catch (error: unknown) {
+        console.error('Error fetching files:', error);
+        const errorMessage = error && typeof error === 'object' && 'response' in error 
+          ? (error.response as any)?.data?.message 
+          : 'ไม่สามารถโหลดข้อมูลไฟล์ได้';
+        Swal.fire({
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด',
+          text: errorMessage,
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFiles();
+  }, []);
+
+  const toggleDeleteStatus = async (file: FileItem) => {
+    if (!file.id) {
+      Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด',
+        text: 'ไม่พบข้อมูลไฟล์',
+      });
+      return;
+    }
+
     Swal.fire({
       title: 'คุณแน่ใจหรือไม่?',
       text: "คุณต้องการย้ายไฟล์นี้ไปถังขยะใช่หรือไม่",
@@ -137,12 +90,24 @@ export default function FilesPage() {
       cancelButtonColor: '#3085d6',
       confirmButtonText: 'ลบ',
       cancelButtonText: 'ยกเลิก'
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        const updateItem = (items: FileItem[], path: string[], depth: number): FileItem[] => {
-          return items.map(item => {
-            if (path[depth] === item.name) {
-              if (depth === path.length - 1) {
+        try {
+          const token = localStorage.getItem('token');
+          await axios.put(
+            `/api/files/${file.id}`,
+            { deleteStatus: true },
+            {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+              },
+            }
+          );
+
+          // อัพเดท state
+          const updateItem = (items: FileItem[]): FileItem[] => {
+            return items.map(item => {
+              if (item.id === file.id) {
                 return {
                   ...item,
                   delete_status: true,
@@ -151,34 +116,65 @@ export default function FilesPage() {
               } else if (item.children) {
                 return {
                   ...item,
-                  children: updateItem(item.children, path, depth + 1)
+                  children: updateItem(item.children)
                 };
               }
-            }
-            return item;
-          });
-        };
-        
-        setFiles(updateItem(files, itemPath, 0));
-        setOpenMenuIndex(null);
-        setOpenRecommendedMenuIndex(null);
+              return item;
+            });
+          };
 
-        Swal.fire({
-          icon: 'success',
-          title: 'ลบสำเร็จ!',
-          text: 'ไฟล์ถูกย้ายไปถังขยะแล้ว',
-          showConfirmButton: false,
-          timer: 1500
-        });
+          setFiles(updateItem(files));
+          setOpenMenuIndex(null);
+          setOpenRecommendedMenuIndex(null);
+
+          Swal.fire({
+            icon: 'success',
+            title: 'ลบสำเร็จ!',
+            text: 'ไฟล์ถูกย้ายไปถังขยะแล้ว',
+            showConfirmButton: false,
+            timer: 1500
+          });
+        } catch (error: unknown) {
+          console.error('Error deleting file:', error);
+          const errorMessage = error && typeof error === 'object' && 'response' in error 
+            ? (error.response as any)?.data?.message 
+            : 'ไม่สามารถลบไฟล์ได้';
+          Swal.fire({
+            icon: 'error',
+            title: 'เกิดข้อผิดพลาด',
+            text: errorMessage,
+          });
+        }
       }
     });
   };
 
-  const toggleRecommendStatus = (itemPath: string[]) => {
-    const updateItem = (items: FileItem[], path: string[], depth: number): FileItem[] => {
-      return items.map(item => {
-        if (path[depth] === item.name) {
-          if (depth === path.length - 1) {
+  const toggleRecommendStatus = async (file: FileItem) => {
+    if (!file.id) {
+      Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด',
+        text: 'ไม่พบข้อมูลไฟล์',
+      });
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(
+        `/api/files/${file.id}`,
+        { recommendStatus: !file.recommend_status },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        }
+      );
+
+      // อัพเดท state
+      const updateItem = (items: FileItem[]): FileItem[] => {
+        return items.map(item => {
+          if (item.id === file.id) {
             return {
               ...item,
               recommend_status: !item.recommend_status
@@ -186,29 +182,39 @@ export default function FilesPage() {
           } else if (item.children) {
             return {
               ...item,
-              children: updateItem(item.children, path, depth + 1)
+              children: updateItem(item.children)
             };
           }
-        }
-        return item;
-      });
-    };
-    
-    setFiles(updateItem(files, itemPath, 0));
-    setOpenMenuIndex(null);
-    setOpenRecommendedMenuIndex(null);
+          return item;
+        });
+      };
 
-    Swal.fire({
-      icon: 'success',
-      title: 'สำเร็จ',
-      text: 'ปรับปรุงสถานะแนะนำเรียบร้อยแล้ว',
-      showConfirmButton: false,
-      timer: 1500
-    });
+      setFiles(updateItem(files));
+      setOpenMenuIndex(null);
+      setOpenRecommendedMenuIndex(null);
+
+      Swal.fire({
+        icon: 'success',
+        title: 'สำเร็จ',
+        text: 'ปรับปรุงสถานะแนะนำเรียบร้อยแล้ว',
+        showConfirmButton: false,
+        timer: 1500
+      });
+    } catch (error: unknown) {
+      console.error('Error updating file:', error);
+      const errorMessage = error && typeof error === 'object' && 'response' in error 
+        ? (error.response as any)?.data?.message 
+        : 'ไม่สามารถอัพเดทไฟล์ได้';
+      Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด',
+        text: errorMessage,
+      });
+    }
   };
 
   const getCurrentItems = (): FileItem[] => {
-    let items = files.length > 0 ? files : allFilesData;
+    let items = files;
     for (const folderName of currentPath) {
       const folder = items.find(item => item.name === folderName);
       if (folder && folder.children) {
@@ -233,28 +239,12 @@ export default function FilesPage() {
       }
     };
     
-    traverse(files.length > 0 ? files : allFilesData);
+    traverse(files);
     return recommended;
   };
 
   const folders = getCurrentItems();
   const recommendedFiles = getRecommendedFiles();
-
-  const getFilePath = (file: FileItem): string[] => {
-    const findPath = (items: FileItem[], target: FileItem, currentPath: string[] = []): string[] | null => {
-      for (const item of items) {
-        if (item === target) {
-          return [...currentPath, item.name];
-        }
-        if (item.children) {
-          const result = findPath(item.children, target, [...currentPath, item.name]);
-          if (result) return result;
-        }
-      }
-      return null;
-    };
-    return findPath(files, file) || [file.name];
-  };
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -262,7 +252,7 @@ export default function FilesPage() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        <PageHeader />
+        <PageHeader name={nameuser} />
 
         {/* Content */}
         <main className="flex-1 px-8 pt-6 overflow-auto border border-gray-200 rounded-xl mx-4 mb-4 bg-white">
@@ -285,8 +275,8 @@ export default function FilesPage() {
                   onNavigate={() => {
                    // Recommended files usually open preview, but here we treat them as maybe clickable if they were folders (they are files)
                   }}
-                  onMoveToTrash={() => toggleDeleteStatus(getFilePath(file))}
-                  onToggleRecommend={() => toggleRecommendStatus(getFilePath(file))}
+                  onMoveToTrash={() => toggleDeleteStatus(file)}
+                  onToggleRecommend={() => toggleRecommendStatus(file)}
                 />
               ))}
               {recommendedFiles.length === 0 && (
@@ -345,8 +335,8 @@ export default function FilesPage() {
                         setOpenMenuIndex(null);
                       }
                     }}
-                    onMoveToTrash={() => toggleDeleteStatus([...currentPath, folder.name])}
-                    onToggleRecommend={() => toggleRecommendStatus([...currentPath, folder.name])}
+                    onMoveToTrash={() => toggleDeleteStatus(folder)}
+                    onToggleRecommend={() => toggleRecommendStatus(folder)}
                   />
                 ))}
               </div>
@@ -381,8 +371,8 @@ export default function FilesPage() {
                             setOpenMenuIndex(null);
                           }
                         }}
-                        onMoveToTrash={() => toggleDeleteStatus([...currentPath, folder.name])}
-                        onToggleRecommend={() => toggleRecommendStatus([...currentPath, folder.name])}
+                        onMoveToTrash={() => toggleDeleteStatus(folder)}
+                        onToggleRecommend={() => toggleRecommendStatus(folder)}
                       />
                     ))}
                   </tbody>

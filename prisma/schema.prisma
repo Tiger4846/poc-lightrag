@@ -7,6 +7,11 @@ datasource db {
   provider = "postgresql"
 }
 
+enum role {
+  USER
+  ADMIN
+}
+
 model User {
   id             String     @id @default(cuid())
   email          String     @unique
@@ -14,6 +19,7 @@ model User {
   password       String
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
+  role          role     @default(USER)
   files          FileNode[]
 }
 
@@ -36,4 +42,9 @@ model FileNode {
   createdAt  DateTime @default(now())
   user       User?    @relation(fields: [userId], references: [id])
   userId     String?
+  
+  // สถานะไฟล์
+  recommendStatus Boolean   @default(false)
+  deleteStatus    Boolean   @default(false)
+  deletedAt       DateTime?
 }

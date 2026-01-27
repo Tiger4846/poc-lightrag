@@ -4,6 +4,9 @@ import Sidebar from "../components/Sidebar";
 import Image from "next/image";
 import PageHeader from "../components/files/PageHeader";
 
+
+const username = localStorage.getItem('userName') || 'User';
+
 export default function TrashPage() {
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -11,7 +14,7 @@ export default function TrashPage() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        <PageHeader />
+        <PageHeader name={username} />
 
         {/* Content */}
         <main className="flex-1 px-8 pt-6 overflow-auto border border-gray-200 rounded-xl mx-4 mb-4 bg-white">

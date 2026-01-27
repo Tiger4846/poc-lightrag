@@ -52,7 +52,7 @@ export default function FileListItem({
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 bg-orange-400 rounded-full flex items-center justify-center">
-            <span className="text-white text-xs font-semibold">WT</span>
+            <span className="text-white text-xs font-semibold">{file.owner.charAt(0)}</span>
           </div>
           <span className="text-sm text-gray-900">{file.owner}</span>
         </div>

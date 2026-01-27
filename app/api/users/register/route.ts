@@ -4,19 +4,7 @@ import { registerSchema } from "@/lib/zod/schema";
 import bcrypt from 'bcrypt';
 
 
-// export async function GET() {
-
-//     try{
-
-//         const users = await prisma.user.findMany();    
-//         return NextResponse.json(users);
-//     }
-//     catch(error){
-//         console.error("Error fetching users:", error);
-//         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
-//     }
-// }
-
+// api ตรวจสอบอีเมลว่าซ้ำไหม
 export async function GET(request: NextRequest) {
     try {
         const searchParams = request.nextUrl.searchParams;
@@ -33,7 +21,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
-
+// api ลงทะเบียนผู้ใช้
 export async function POST(request : NextRequest) {
     try {
         const body = await request.json();

@@ -1,4 +1,5 @@
 export type FileItem = {
+  id?: string; // เพิ่ม id สำหรับการอัพเดท
   name: string;
   owner: string;
   date: string;

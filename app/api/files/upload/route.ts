@@ -5,6 +5,8 @@ import {v4 as uuidv4} from "uuid";
 import {prisma} from "@/lib/prisma/prisma";
 import { getUserIdFromRequest } from "@/lib/auth/jwt";
 
+
+// api อัพโหลดไฟล์
 export async function POST(req:Request) {
     try {
         // ตรวจสอบ authentication
