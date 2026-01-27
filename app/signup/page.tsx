@@ -106,7 +106,7 @@ export default function SignupPage() {
       Already have an account?{" "}
       <Link
         href="/login"
-        className="font-semibold leading-6 text-red-600 hover:text-red-500 dark:text-red-400"
+        className="font-semibold leading-6 text-red-600 hover:text-red-500"
       >
         Sign in
       </Link>
@@ -131,7 +131,7 @@ export default function SignupPage() {
               type="text"
               autoComplete="name"
               required
-              className="relative block w-full rounded-t-md border-0 p-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-red-600 sm:text-sm sm:leading-6 dark:bg-zinc-900 dark:text-white dark:ring-gray-700 dark:focus:ring-red-500"
+              className="relative block w-full rounded-t-md border-0 p-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-red-600 sm:text-sm sm:leading-6"
               placeholder="Full Name"
               onChange={handleChange}
             />
@@ -146,7 +146,7 @@ export default function SignupPage() {
               type="email"
               autoComplete="email"
               required
-              className="relative block w-full border-0 p-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-red-600 sm:text-sm sm:leading-6 dark:bg-zinc-900 dark:text-white dark:ring-gray-700 dark:focus:ring-red-500"
+              className="relative block w-full border-0 p-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-red-600 sm:text-sm sm:leading-6"
               placeholder="Email address"
               onChange={handleChange}
             />
@@ -161,7 +161,7 @@ export default function SignupPage() {
               type="password"
               autoComplete="new-password"
               required
-              className="relative block w-full border-0 p-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-red-600 sm:text-sm sm:leading-6 dark:bg-zinc-900 dark:text-white dark:ring-gray-700 dark:focus:ring-red-500"
+              className="relative block w-full border-0 p-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-red-600 sm:text-sm sm:leading-6"
               placeholder="Password"
               onChange={handleChange}
             />
@@ -176,7 +176,7 @@ export default function SignupPage() {
               type="password"
               autoComplete="new-password"
               required
-              className="relative block w-full rounded-b-md border-0 p-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-red-600 sm:text-sm sm:leading-6 dark:bg-zinc-900 dark:text-white dark:ring-gray-700 dark:focus:ring-red-500"
+              className="relative block w-full rounded-b-md border-0 p-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-red-600 sm:text-sm sm:leading-6"
               placeholder="Confirm Password"
               onChange={handleChange}
             />
@@ -194,12 +194,12 @@ export default function SignupPage() {
           />
           <label
             htmlFor="terms"
-            className="ml-2 block text-sm text-gray-900 dark:text-gray-300"
+            className="ml-2 block text-sm text-gray-900"
           >
             I agree to the{" "}
             <a
               href="#"
-              className="font-medium text-red-600 hover:text-red-500 dark:text-red-400"
+              className="font-medium text-red-600 hover:text-red-500"
             >
               Terms and Conditions
             </a>
