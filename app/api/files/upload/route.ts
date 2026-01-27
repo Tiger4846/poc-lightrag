@@ -2,10 +2,20 @@ import { NextResponse } from "next/server";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import {v4 as uuidv4} from "uuid";
-import {prisma} from "@/lib/prisma/prisma"
+import {prisma} from "@/lib/prisma/prisma";
+import { getUserIdFromRequest } from "@/lib/auth/jwt";
 
 export async function POST(req:Request) {
     try {
+        // ตรวจสอบ authentication
+        const userId = getUserIdFromRequest(req);
+        if (!userId) {
+            return NextResponse.json(
+                { message: "Unauthorized - Please login first" }, 
+                { status: 401 }
+            );
+        }
+
         const data = await req.formData();
         const file: File | null = data.get("file") as unknown as File;
             if(!file){
@@ -32,8 +42,10 @@ export async function POST(req:Request) {
                     size: file.size,
                     // mimeType: file.type,
                     parentId: parentId || null,
+                    userId: userId, // เชื่อมโยงไฟล์กับผู้ใช้ที่อัปโหลด
                 },
             });
+
         return NextResponse.json({message:"File uploaded successfully", fileName: uniqueFileName}, {status:200});
         } catch (error) {  
             return NextResponse.json({message:"Error uploading file",error}, {status:500});

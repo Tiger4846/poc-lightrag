@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useRef } from "react";
 import axios from "axios";
@@ -59,9 +60,13 @@ export default function Sidebar() {
             html: `กำลังดำเนินการ ${i + 1}/${selectedFiles.length}<br/>${file.name}`
           });
 
+          // ดึง token จาก localStorage
+          const token = localStorage.getItem('token');
+          
           await axios.post('/api/files/upload', formData, {
             headers: {
-              'Content-Type': 'multipart/form-data'
+              'Content-Type': 'multipart/form-data',
+              'Authorization': token ? `Bearer ${token}` : '',
             }
           });
           successCount++;
@@ -177,7 +182,7 @@ export default function Sidebar() {
       </div>
 
       <nav className="flex flex-col gap-1">
-        <a
+        <Link
           href="/" 
           className={`flex items-center gap-3 px-4 py-2.5 rounded-full ${
             pathname === "/" 
@@ -189,8 +194,8 @@ export default function Sidebar() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
           </svg>
           <span className="text-sm font-semibold">โฟลเดอร์ของฉัน</span>
-        </a>
-        <a 
+        </Link>
+        <Link 
           href="/recent" 
           className={`flex items-center gap-3 px-4 py-2.5 rounded-full ${
             pathname === "/recent" 
@@ -202,8 +207,8 @@ export default function Sidebar() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <span className="text-sm font-semibold">ล่าสุด</span>
-        </a>
-        <a 
+        </Link>
+        <Link 
           href="/trash" 
           className={`flex items-center gap-3 px-4 py-2.5 rounded-full ${
             pathname === "/trash" 
@@ -215,7 +220,7 @@ export default function Sidebar() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
           </svg>
           <span className="text-sm font-semibold">ถังขยะ</span>
-        </a>
+        </Link>
       </nav>
     </aside>
 

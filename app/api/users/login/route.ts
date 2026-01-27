@@ -1,6 +1,7 @@
 import { NextResponse,NextRequest } from "next/server";
 import { prisma } from '@/lib/prisma/prisma'
 import bcrypt from 'bcrypt';
+import { generateToken } from '@/lib/auth/jwt';
 
 
 
@@ -13,7 +14,7 @@ export async function POST(request: NextRequest) {
             where: {
                 email: email || undefined,
             },
-            select : {email: true, password: true, name: true}
+            select : {id: true, email: true, password: true, name: true}
         });
         
         if (!user) {
@@ -23,7 +24,19 @@ export async function POST(request: NextRequest) {
         if (!isPasswordValid) {
             return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
         }
-        return NextResponse.json({ status : 201 , name : user.name });
+
+        // สร้าง JWT token
+        const token = generateToken({
+            userId: user.id,
+            email: user.email
+        });
+
+        return NextResponse.json({ 
+            status: 201, 
+            name: user.name,
+            token: token,
+            userId: user.id
+        });
 
     } catch(error){
         console.error("Error during login:", error);

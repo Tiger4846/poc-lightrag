@@ -23,6 +23,13 @@ try {
   });
 
   if (response.status === 200 || response.data.status === 200) {
+      // เก็บ token และ userId ใน localStorage
+      if (response.data.token) {
+          localStorage.setItem('token', response.data.token);
+          localStorage.setItem('userId', response.data.userId);
+          localStorage.setItem('userName', response.data.name);
+      }
+      
       Swal.fire({
           icon: 'success',
           title: 'เข้าสู่ระบบสำเร็จ',
