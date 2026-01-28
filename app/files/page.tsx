@@ -97,7 +97,7 @@ export default function FilesPage() {
             }
           );
 
-          // Refresh files to get updated data
+
           await refreshFiles();
           setOpenMenuIndex(null);
           setOpenRecommendedMenuIndex(null);
@@ -148,7 +148,7 @@ export default function FilesPage() {
         }
       );
 
-      // Refresh to get updated data
+
       await refreshFiles();
       setOpenMenuIndex(null);
       setOpenRecommendedMenuIndex(null);

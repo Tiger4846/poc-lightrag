@@ -18,9 +18,8 @@ interface FileNodeFromAPI {
   } | null;
 }
 
-/**
- * แปลง extension ของไฟล์เป็นประเภทไฟล์
- */
+
+//  แปลง extension ของไฟล์เป็นประเภทไฟล์
 function getFileType(fileName: string): "pdf" | "image" | "txt" | "doc" | undefined {
   const extension = fileName.split(".").pop()?.toLowerCase();
   
@@ -34,9 +33,7 @@ function getFileType(fileName: string): "pdf" | "image" | "txt" | "doc" | undefi
   return undefined;
 }
 
-/**
- * แปลงวันที่เป็นรูปแบบไทย
- */
+  //  แปลงวันที่เป็นรูปแบบไทย  
 function formatThaiDate(dateString: string): string {
   const date = new Date(dateString);
   const thaiMonths = [
@@ -46,14 +43,13 @@ function formatThaiDate(dateString: string): string {
   
   const day = date.getDate();
   const month = thaiMonths[date.getMonth()];
-  const year = date.getFullYear() + 543; // แปลงเป็นพุทธศักราช
+  const year = date.getFullYear() + 543; 
   
   return `${day} ${month} ${year}`;
 }
 
-/**
- * แปลง FileNode จาก API เป็น FileItem
- */
+// แปลง FileNode จาก API เป็น FileItem
+
 function convertToFileItem(node: FileNodeFromAPI): FileItem & { id: string } {
   return {
     id: node.id,
@@ -81,7 +77,7 @@ export function buildFileTree(fileNodes: FileNodeFromAPI[]): FileItem[] {
   // สร้างโครงสร้างต้นไม้
   const rootItems: FileItem[] = [];
   
-  // ทำต้นไม้เพือ่นหา parent-child relationship ทำให้รู้ว่าไฟล์ไหนอยู่ภายใต้โฟลเดอร์ไหน
+  // ทำต้นไม้เพื่อหา parent-child relationship ทำให้รู้ว่าไฟล์ไหนอยู่ภายใต้โฟลเดอร์ไหน
   fileNodes.forEach(node => {
     const item = itemMap.get(node.id);
     if (!item) return;
@@ -107,21 +103,21 @@ export function buildFileTree(fileNodes: FileNodeFromAPI[]): FileItem[] {
   return rootItems;
 }
 
-/**
- * หา FileItem และ path ของมันในต้นไม้
- */
+// เอาไว้หา Path ของไฟล์
 export function findFileById(
   items: FileItem[],
   fileId: string,
   currentPath: string[] = []
 ): { item: FileItem; path: string[] } | null {
+
   for (const item of items) {
+
     const itemWithId = item as FileItem & { id?: string };
-    
+
     if (itemWithId.id === fileId) {
       return { item, path: [...currentPath, item.name] };
     }
-    
+
     if (item.children) {
       const found = findFileById(item.children, fileId, [...currentPath, item.name]);
       if (found) return found;

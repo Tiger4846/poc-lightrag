@@ -7,5 +7,15 @@ const registerSchema = z.object({
     password: z.string().min(6, "Password must be at least 6 characters long")
 });
 
+const loginSchema = z.object({
+    email: z.string().email("Invalid email address"),
+    password: z.string().min(1, "Password is required")
+});
 
-export { registerSchema };
+const createFolderSchema = z.object({
+    name: z.string().min(1, "Folder name is required").trim(),
+    parentId: z.string().nullable().optional()
+});
+
+
+export { registerSchema, loginSchema, createFolderSchema };

@@ -2,14 +2,15 @@ import { NextResponse,NextRequest } from "next/server";
 import { prisma } from '@/lib/prisma/prisma'
 import bcrypt from 'bcrypt';
 import { generateToken } from '@/lib/auth/jwt';
+import { loginSchema } from '@/lib/zod/schema';
 
 
 // api ล็อกอินผู้ใช้
 export async function POST(request: NextRequest) {
     try{
         const body = await request.json();
-        const email = body.email;
-        const password = body.password;
+        const safedata = loginSchema.parse(body);
+        const { email, password } = safedata;
         const user = await prisma.dir_User.findFirst({
             where: {
                 email: email || undefined,

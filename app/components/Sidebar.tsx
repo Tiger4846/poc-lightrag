@@ -63,7 +63,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
             html: `กำลังดำเนินการ ${i + 1}/${selectedFiles.length}<br/>${file.name}`
           });
 
-          // ดึง token จาก localStorage
+
           const token = localStorage.getItem('token');
           
           await axios.post('/api/files/upload', formData, {

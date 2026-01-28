@@ -6,7 +6,6 @@ import { getUserIdFromRequest } from "@/lib/auth/jwt";
 // api เรียกดูไฟล์ทั้งหมด
 export async function GET(req: Request) {
   try {
-    // ตรวจสอบ authentication
     const userId = getUserIdFromRequest(req);
     if (!userId) {
       return NextResponse.json(

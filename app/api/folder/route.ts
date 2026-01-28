@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma/prisma";
 import { getUserIdFromRequest } from "@/lib/auth/jwt";
+import { createFolderSchema } from "@/lib/zod/schema";
 
 // api สร้างโฟลเดอร์ใหม่
 
 export async function POST(req: Request) {
     try {
-        // ตรวจสอบ authentication
+
         const userId = getUserIdFromRequest(req);
         if (!userId) {
             return NextResponse.json(
@@ -15,7 +16,7 @@ export async function POST(req: Request) {
             );
         }
 
-        // ดึงข้อมูล user เพื่อตรวจสอบ role
+
         const user = await prisma.dir_User.findUnique({ 
             where: { id: userId },
             select: { id: true, role: true }
@@ -28,7 +29,7 @@ export async function POST(req: Request) {
             );
         }
 
-        // ตรวจสอบสิทธิ์ - เฉพาะ ADMIN เท่านั้นที่สร้างโฟลเดอร์ได้ (MVP)
+
         if (user.role !== 'ADMIN') {
             return NextResponse.json(
                 { message: "เฉพาะผู้ดูแลระบบเท่านั้นที่สามารถสร้างโฟลเดอร์ได้" },
@@ -38,15 +39,9 @@ export async function POST(req: Request) {
 
         const data = await req.json();
         console.log("Received folder data:", data);
-        const { name, parentId } = data;
-
-        // ตรวจสอบว่ามีชื่อโฟลเดอร์หรือไม่
-        if (!name || name.trim() === '') {
-            return NextResponse.json(
-                { message: "กรุณาระบุชื่อโฟลเดอร์" },
-                { status: 400 }
-            );
-        }
+        
+        const safedata = createFolderSchema.parse(data);
+        const { name, parentId } = safedata;
 
         const newfolder = await prisma.fileNode.create({
             data: {
