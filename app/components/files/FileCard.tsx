@@ -24,13 +24,13 @@ export default function FileCard({
 }: FileCardProps) {
   return (
     <div
-      className="relative bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer group"
+      className="relative bg-white border border-gray-200 rounded-lg p-3 md:p-4 hover:shadow-md transition-shadow cursor-pointer group"
       onClick={onNavigate}
     >
       <div className="relative">
         <button
           onClick={onToggleMenu}
-          className="absolute top-3 right-3 w-6 h-6 hover:bg-gray-100 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+          className="absolute top-2 md:top-3 right-2 md:right-3 w-6 h-6 hover:bg-gray-100 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
         >
           <span className="text-gray-600">⋯</span>
         </button>
@@ -98,19 +98,19 @@ export default function FileCard({
           </>
         )}
       </div>
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-2 md:gap-3">
         {file.type === "folder" ? (
           <svg
-            className="w-12 h-12 text-yellow-500 flex-shrink-0"
+            className="w-10 h-10 md:w-12 md:h-12 text-yellow-500 flex-shrink-0"
             fill="currentColor"
             viewBox="0 0 24 24"
           >
             <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" />
           </svg>
         ) : (
-          <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
             <svg
-              className="w-6 h-6 text-gray-500"
+              className="w-5 h-5 md:w-6 md:h-6 text-gray-500"
               fill="currentColor"
               viewBox="0 0 24 24"
             >

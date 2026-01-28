@@ -18,6 +18,7 @@ export default function FilesPage() {
   const [openRecommendedMenuIndex, setOpenRecommendedMenuIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [nameuser, setNameuser] = useState<string>('User');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -195,20 +196,20 @@ export default function FilesPage() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <Sidebar />
+      <Sidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        <PageHeader name={nameuser} />
+        <PageHeader name={nameuser} onMenuClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} />
 
         {/* Content */}
-        <main className="flex-1 px-8 pt-6 overflow-auto border border-gray-200 rounded-xl mx-4 mb-4 bg-white">
+        <main className="flex-1 px-2 md:px-4 lg:px-8 pt-4 md:pt-6 overflow-auto border border-gray-200 rounded-xl mx-2 md:mx-4 mb-2 md:mb-4 bg-white">
           <Breadcrumb />
 
           {/* Attachments Section */}
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">รายการแนะนำ</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <section className="mb-6 md:mb-8">
+            <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-3 md:mb-4">รายการแนะนำ</h2>
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
               {recommendedFiles.map((file, index) => (
                 <FileCard
                   key={index}
@@ -234,28 +235,28 @@ export default function FilesPage() {
 
           {/* Folders Section */}
           <section>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-semibold text-gray-900">ไฟล์ทั้งหมด</h2>
-              <div className="flex items-center gap-4">
-                <div className="flex gap-2">
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <h2 className="text-xl md:text-2xl font-semibold text-gray-900">ไฟล์ทั้งหมด</h2>
+              <div className="flex items-center gap-2 md:gap-4">
+                <div className="flex gap-1 md:gap-2">
                   <button 
                     onClick={() => setViewMode("grid")}
-                    className={`p-2 rounded ${viewMode === "grid" ? "text-red-600 bg-red-50" : "text-gray-600 hover:text-red-600 hover:bg-red-50"}`}
+                    className={`p-1.5 md:p-2 rounded ${viewMode === "grid" ? "text-red-600 bg-red-50" : "text-gray-600 hover:text-red-600 hover:bg-red-50"}`}
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                     </svg>
                   </button>
                   <button 
                     onClick={() => setViewMode("list")}
-                    className={`p-2 rounded ${viewMode === "list" ? "text-red-600 bg-red-50" : "text-gray-600 hover:text-red-600 hover:bg-red-50"}`}
+                    className={`p-1.5 md:p-2 rounded ${viewMode === "list" ? "text-red-600 bg-red-50" : "text-gray-600 hover:text-red-600 hover:bg-red-50"}`}
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                   </button>
                 </div>
-                <select className="px-3 py-1.5 text-sm border border-gray-300 rounded-md bg-white text-gray-700">
+                <select className="px-2 md:px-3 py-1 md:py-1.5 text-xs md:text-sm border border-gray-300 rounded-md bg-white text-gray-700">
                   <option>เรียง</option>
                   <option>ชื่อ</option>
                   <option>วันที่</option>
@@ -265,7 +266,7 @@ export default function FilesPage() {
 
             {/* Grid View */}
             {viewMode === "grid" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
                 {currentItems.map((folder, index) => (
                   <FileCard
                     key={index}
@@ -291,8 +292,8 @@ export default function FilesPage() {
 
             {/* List/Table View */}
             {viewMode === "list" && (
-              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                <table className="w-full">
+              <div className="bg-white rounded-lg border border-gray-200 overflow-x-auto">
+                <table className="w-full min-w-[600px]">
                   <thead className="bg-gray-50 border-b border-gray-200">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ชื่อ</th>

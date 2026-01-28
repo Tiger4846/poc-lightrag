@@ -9,6 +9,7 @@ import Swal from 'sweetalert2';
 
 export default function RecentPage() {
   const [openMenuIndex, setOpenMenuIndex] = useState<{ section: string, index: number } | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [Usersname, setUsersname] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem("userName") || "User";
@@ -47,14 +48,14 @@ export default function RecentPage() {
   };
 
   const renderFileSection = (title: string, files: FileItem[], sectionId: string) => (
-    <section className="mb-8">
-        <h2 className="text-base font-semibold text-gray-900 mb-4">{title}</h2>
-        <div className="flex flex-wrap gap-4">
+    <section className="mb-6 md:mb-8">
+        <h2 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">{title}</h2>
+        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
             {files.map((file, index) => (
-                <div key={index} className="w-[280px]">
-                    <FileCard 
-                        file={file}
-                        isMenuOpen={openMenuIndex?.section === sectionId && openMenuIndex?.index === index}
+                <FileCard 
+                    key={index}
+                    file={file}
+                    isMenuOpen={openMenuIndex?.section === sectionId && openMenuIndex?.index === index}
                         onToggleMenu={(e) => {
                             e.stopPropagation();
                             setOpenMenuIndex(
@@ -65,10 +66,9 @@ export default function RecentPage() {
                         }}
                         onCloseMenu={() => setOpenMenuIndex(null)}
                         onNavigate={() => {}}
-                        onMoveToTrash={() => handleMockAction('ย้ายไปถังขยะ', file.name)}
-                        onToggleRecommend={() => handleMockAction('แนะนำ', file.name)}
-                    />
-                </div>
+                    onMoveToTrash={() => handleMockAction('ย้ายไปถังขยะ', file.name)}
+                    onToggleRecommend={() => handleMockAction('แนะนำ', file.name)}
+                />
             ))}
         </div>
     </section>
@@ -76,19 +76,19 @@ export default function RecentPage() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <Sidebar />
+      <Sidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        <PageHeader name={Usersname} />
+        <PageHeader name={Usersname} onMenuClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} />
 
         {/* Content */}
-        <main className="flex-1 px-8 pt-6 overflow-auto border border-gray-200 rounded-xl mx-4 mb-4 bg-white">
+        <main className="flex-1 px-2 md:px-4 lg:px-8 pt-4 md:pt-6 overflow-auto border border-gray-200 rounded-xl mx-2 md:mx-4 mb-2 md:mb-4 bg-white">
           {/* Title */}
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-semibold text-gray-900">ล่าสุด</h1>
-            <div className="flex items-center gap-4">
-              <select className="px-3 py-1.5 text-sm border border-gray-300 rounded-md bg-white text-gray-700">
+          <div className="flex items-center justify-between mb-4 md:mb-6">
+            <h1 className="text-xl md:text-2xl font-semibold text-gray-900">ล่าสุด</h1>
+            <div className="flex items-center gap-2 md:gap-4">
+              <select className="px-2 md:px-3 py-1 md:py-1.5 text-xs md:text-sm border border-gray-300 rounded-md bg-white text-gray-700">
                 <option>วันที่ปับ</option>
                 <option>เรียง</option>
                 <option>ชื่อ</option>

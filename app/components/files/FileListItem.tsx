@@ -27,11 +27,11 @@ export default function FileListItem({
       className="hover:bg-gray-50 cursor-pointer group"
       onClick={onNavigate}
     >
-      <td className="px-6 py-4 whitespace-nowrap">
-        <div className="flex items-center gap-3">
+      <td className="px-3 md:px-6 py-3 md:py-4 whitespace-nowrap">
+        <div className="flex items-center gap-2 md:gap-3">
           {file.type === "folder" ? (
             <svg
-              className="w-5 h-5 text-yellow-500"
+              className="w-4 h-4 md:w-5 md:h-5 text-yellow-500"
               fill="currentColor"
               viewBox="0 0 24 24"
             >
@@ -39,17 +39,17 @@ export default function FileListItem({
             </svg>
           ) : (
             <svg
-              className="w-5 h-5 text-gray-400"
+              className="w-4 h-4 md:w-5 md:h-5 text-gray-400"
               fill="currentColor"
               viewBox="0 0 24 24"
             >
               <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 2l5 5h-5V4zM8 18v-2h8v2H8zm0-4v-2h8v2H8z" />
             </svg>
           )}
-          <span className="text-sm text-gray-900">{file.name}</span>
+          <span className="text-xs md:text-sm text-gray-900">{file.name}</span>
         </div>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap">
+      <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 bg-orange-400 rounded-full flex items-center justify-center">
             <span className="text-white text-xs font-semibold">{file.owner.charAt(0)}</span>
@@ -57,10 +57,10 @@ export default function FileListItem({
           <span className="text-sm text-gray-900">{file.owner}</span>
         </div>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+      <td className="px-3 md:px-6 py-3 md:py-4 whitespace-nowrap text-xs md:text-sm text-gray-900">
         {file.date}
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-right">
+      <td className="px-3 md:px-6 py-3 md:py-4 whitespace-nowrap text-right">
         <div className="relative">
           <button
             onClick={onToggleMenu}

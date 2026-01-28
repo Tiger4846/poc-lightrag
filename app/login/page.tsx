@@ -75,7 +75,7 @@ try {
       subtitle="เข้าสู่ระบบบัญชีของคุณ"
       footerContent={footerLink}
     >
-      <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+      <form className="mt-6 md:mt-8 space-y-6" onSubmit={handleSubmit}>
         <div className="-space-y-px rounded-md shadow-sm">
           <div>
             <label htmlFor="email-address" className="sr-only">
@@ -87,7 +87,7 @@ try {
               type="email"
               autoComplete="email"
               required
-              className="relative block w-full rounded-t-md border-0 p-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-red-600 sm:text-sm sm:leading-6"
+              className="relative block w-full rounded-t-md border-0 p-2.5 md:p-3 text-sm md:text-base text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-red-600"
               placeholder="อีเมล"
               onChange={handleInputChange}
             />
@@ -102,7 +102,7 @@ try {
               type="password"
               autoComplete="current-password"
               required
-              className="relative block w-full rounded-b-md border-0 p-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-red-600 sm:text-sm sm:leading-6"
+              className="relative block w-full rounded-b-md border-0 p-2.5 md:p-3 text-sm md:text-base text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-red-600"
               placeholder="รหัสผ่าน"
               onChange={handleInputChange}
             />
@@ -139,7 +139,7 @@ try {
         <div>
           <button
             type="submit"
-            className="group relative flex w-full justify-center rounded-md bg-red-600 px-3 py-3 text-sm font-semibold text-white hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+            className="group relative flex w-full justify-center rounded-md bg-red-600 px-3 py-2.5 md:py-3 text-sm font-semibold text-white hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
           >
             เข้าสู่ระบบ
           </button>

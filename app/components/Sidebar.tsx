@@ -8,7 +8,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { useNavigation } from "../contexts/NavigationContext";
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void }) {
   const pathname = usePathname();
   const [showModal, setShowModal] = useState(false);
   const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
@@ -173,9 +173,23 @@ export default function Sidebar() {
 
   return (
     <>
-      <aside className="w-70 bg-white border-r border-gray-200 flex flex-col p-4">
+      {/* Backdrop สำหรับ mobile */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={onClose}
+        />
+      )}
+      
+      {/* Sidebar */}
+      <aside className={`
+        fixed lg:relative inset-y-0 left-0 z-50 lg:z-auto
+        w-64 lg:w-70 bg-white border-r border-gray-200 flex flex-col p-4
+        transform transition-transform duration-300 ease-in-out
+        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
       <div className="mb-4">
-        <div className="flex items-center gap-3 ">
+        <div className="flex items-center gap-3">
           <div className="w-12 h-12 flex-shrink-0">
             <Image
               src="/swu_logo.png"
@@ -185,10 +199,11 @@ export default function Sidebar() {
               className="w-full h-full object-contain"
             />
           </div>
-          <div className="text-sm">
+          <div className="text-xs md:text-sm">
             <div>
-              <span className="font-semibold text-gray-600">มหาวิทยาลัยศรีนครินทรวิโรฒ</span>
-              <span className="whitespace-nowrap text-[10px] font-semibold text-gray-600"> SRINAKHARINWIROT UNIVERSITY</span>
+              <span className="font-semibold text-gray-600 hidden sm:inline">มหาวิทยาลัยศรีนครินทรวิโรฒ</span>
+              <span className="font-semibold text-gray-600 sm:hidden">มศว</span>
+              <span className="whitespace-nowrap text-[10px] font-semibold text-gray-600 hidden md:inline"> SRINAKHARINWIROT UNIVERSITY</span>
             </div>
           </div>
         </div>
@@ -197,10 +212,10 @@ export default function Sidebar() {
       <div className="relative mb-6">
         <button 
           onClick={() => setShowModal(true)}
-          className="w-full bg-gradient-to-r from-[#A61919] to-[#FF7B7B] hover:bg-red-700 hover:shadow-lg hover:scale-105 text-white rounded-full py-2.5 px-4 flex items-center justify-center gap-2 text-md font-semibold transition-all duration-200"
+          className="w-full bg-gradient-to-r from-[#A61919] to-[#FF7B7B] hover:bg-red-700 hover:shadow-lg hover:scale-105 text-white rounded-full py-2.5 px-3 md:px-4 flex items-center justify-center gap-2 text-sm md:text-md font-semibold transition-all duration-200"
         >
           <span className="text-lg">+</span>
-          สร้างใหม่
+          <span className="hidden sm:inline">สร้างใหม่</span>
         </button>
 
         {/* Popup Menu */}
