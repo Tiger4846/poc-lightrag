@@ -6,7 +6,7 @@ import { getUserIdFromRequest } from "@/lib/auth/jwt";
 //api อัพเดทสถานะไฟล์
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // ตรวจสอบ authentication
@@ -18,7 +18,7 @@ export async function PUT(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
     const { recommendStatus, deleteStatus } = body;
 

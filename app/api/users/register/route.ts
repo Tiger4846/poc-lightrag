@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     try {
         const searchParams = request.nextUrl.searchParams;
         const email = searchParams.get('email');
-        const check =await prisma.user.findFirst({
+        const check =await prisma.dir_User.findFirst({
             where: {
                 email: email || undefined,  
             },
@@ -31,7 +31,7 @@ export async function POST(request : NextRequest) {
         
         const hash = await bcrypt.hash(password, 10);
         
-        const newUser = await prisma.user.create({
+        const newUser = await prisma.dir_User.create({
             data: {
                 name,
                 email,

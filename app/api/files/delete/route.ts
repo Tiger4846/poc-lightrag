@@ -3,7 +3,7 @@ import {prisma} from "@/lib/prisma/prisma";
 import { getUserIdFromRequest } from "@/lib/auth/jwt";
 
 // api เรียกดูไฟล์ที่ถูกลบ
-export async function get(req:Request) {
+export async function GET(req:Request) {
     const userId = getUserIdFromRequest(req);
     if (!userId) {
         return NextResponse.json(

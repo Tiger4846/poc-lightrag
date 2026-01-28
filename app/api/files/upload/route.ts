@@ -4,7 +4,9 @@ import path from "path";
 import {v4 as uuidv4} from "uuid";
 import {prisma} from "@/lib/prisma/prisma";
 import { getUserIdFromRequest } from "@/lib/auth/jwt";
-
+import { pipeline } from "stream/promises";
+import { Readable } from "stream";
+import { createWriteStream } from "fs";
 
 // api อัพโหลดไฟล์
 export async function POST(req:Request) {
@@ -18,24 +20,33 @@ export async function POST(req:Request) {
             );
         }
 
+        
         const data = await req.formData();
         const file: File | null = data.get("file") as unknown as File;
             if(!file){
                 return NextResponse.json({message:"No file provided"}, {status:400});
             }
 
+        
+
         const parentId = data.get("parentId") as string | null;
-    
-        const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-            
+        // สร้างโฟลเดอร์สำหรับเก็บไฟล์ ถ้ายังไม่มี
         const uploadDir = path.join(process.cwd(),"uploads");
         await mkdir(uploadDir,{recursive:true});
 
+        // สร้างชื่อไฟล์แบบสุ่มเพื่อป้องกันการชนกัน
         const fileExtension = path.extname(file.name) || "";
         const uniqueFileName = `${uuidv4()}${fileExtension}`;
+        // Path ไฟล์ที่จะบันทึก
         const filePath = path.join(uploadDir,uniqueFileName);
-        await writeFile(filePath,buffer);
+
+        // บันทึกไฟล์ลงระบบไฟล์ด้วย streams
+        const fileWriter = createWriteStream(filePath);
+        const fileStream = Readable.fromWeb(file.stream() as any);
+        await pipeline(fileStream, fileWriter);
+
+        // บันทึกข้อมูลไฟล์ลงฐานข้อมูล
+        
         await prisma.fileNode.create({
                 data: {
                     name: file.name,
@@ -44,7 +55,7 @@ export async function POST(req:Request) {
                     size: file.size,
                     // mimeType: file.type,
                     parentId: parentId || null,
-                    userId: userId, // เชื่อมโยงไฟล์กับผู้ใช้ที่อัปโหลด
+                    userId: userId, 
                 },
             });
 

@@ -9,6 +9,12 @@ import Swal from 'sweetalert2';
 
 export default function RecentPage() {
   const [openMenuIndex, setOpenMenuIndex] = useState<{ section: string, index: number } | null>(null);
+  const [Usersname, setUsersname] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem("userName") || "User";
+    }
+    return "User";
+  });
 
   const pinnedFiles: FileItem[] = [
     { name: "ศูนพ์ใช้ง่อง รุ่น 24.....", type: "file", fileType: "image", owner: "Waewpan", date: "now", recommend_status: false, delete_status: false, deleted_at: null },
@@ -74,7 +80,7 @@ export default function RecentPage() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        <PageHeader />
+        <PageHeader name={Usersname} />
 
         {/* Content */}
         <main className="flex-1 px-8 pt-6 overflow-auto border border-gray-200 rounded-xl mx-4 mb-4 bg-white">

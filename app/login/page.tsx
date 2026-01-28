@@ -59,27 +59,27 @@ try {
 
   const footerLink = (
     <>
-      Not a member?{" "}
+      ยังไม่มีบัญชี?{" "}
       <Link
         href="/signup"
         className="font-semibold leading-6 text-red-600 hover:text-red-500"
       >
-        Sign up now
+        สมัครสมาชิก
       </Link>
     </>
   );
 
   return (
     <AuthLayout
-      title="Welcome back"
-      subtitle="Sign in to your account"
+      title="ยินดีต้อนรับกลับมา"
+      subtitle="เข้าสู่ระบบบัญชีของคุณ"
       footerContent={footerLink}
     >
       <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
         <div className="-space-y-px rounded-md shadow-sm">
           <div>
             <label htmlFor="email-address" className="sr-only">
-              Email address
+              อีเมล
             </label>
             <input
               id="email-address"
@@ -88,13 +88,13 @@ try {
               autoComplete="email"
               required
               className="relative block w-full rounded-t-md border-0 p-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-red-600 sm:text-sm sm:leading-6"
-              placeholder="Email address"
+              placeholder="อีเมล"
               onChange={handleInputChange}
             />
           </div>
           <div>
             <label htmlFor="password" className="sr-only">
-              Password
+              รหัสผ่าน
             </label>
             <input
               id="password"
@@ -103,7 +103,7 @@ try {
               autoComplete="current-password"
               required
               className="relative block w-full rounded-b-md border-0 p-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-red-600 sm:text-sm sm:leading-6"
-              placeholder="Password"
+              placeholder="รหัสผ่าน"
               onChange={handleInputChange}
             />
           </div>
@@ -122,7 +122,7 @@ try {
               htmlFor="remember-me"
               className="ml-2 block text-sm text-gray-900"
             >
-              Remember me
+              จดจำฉันไว้
             </label>
           </div>
 
@@ -131,7 +131,7 @@ try {
               href="#"
               className="font-medium text-red-600 hover:text-red-500"
             >
-              Forgot your password?
+              ลืมรหัสผ่าน?
             </a>
           </div>
         </div>
@@ -141,7 +141,7 @@ try {
             type="submit"
             className="group relative flex w-full justify-center rounded-md bg-red-600 px-3 py-3 text-sm font-semibold text-white hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
           >
-            Sign in
+            เข้าสู่ระบบ
           </button>
         </div>
       </form>

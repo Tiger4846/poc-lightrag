@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const email = body.email;
         const password = body.password;
-        const user = await prisma.user.findFirst({
+        const user = await prisma.dir_User.findFirst({
             where: {
                 email: email || undefined,
             },

@@ -103,27 +103,27 @@ export default function SignupPage() {
   
   const footerLink = (
     <>
-      Already have an account?{" "}
+      มีบัญชีอยู่แล้ว?{" "}
       <Link
         href="/login"
         className="font-semibold leading-6 text-red-600 hover:text-red-500"
       >
-        Sign in
+        เข้าสู่ระบบ
       </Link>
     </>
   );
 
   return (
     <AuthLayout
-      title="Create an account"
-      subtitle="Join us today and start your journey"
+      title="สร้างบัญชี"
+      subtitle="สมัครสมาชิกและเริ่มต้นการใช้งาน"
       footerContent={footerLink}
     >
       <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
         <div className="-space-y-px rounded-md shadow-sm">
           <div>
             <label htmlFor="full-name" className="sr-only">
-              Full Name
+              ชื่อ-นามสกุล
             </label>
             <input
               id="full-name"
@@ -132,13 +132,13 @@ export default function SignupPage() {
               autoComplete="name"
               required
               className="relative block w-full rounded-t-md border-0 p-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-red-600 sm:text-sm sm:leading-6"
-              placeholder="Full Name"
+              placeholder="ชื่อ-นามสกุล"
               onChange={handleChange}
             />
           </div>
           <div>
             <label htmlFor="email-address" className="sr-only">
-              Email address
+              อีเมล
             </label>
             <input
               id="email-address"
@@ -147,13 +147,13 @@ export default function SignupPage() {
               autoComplete="email"
               required
               className="relative block w-full border-0 p-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-red-600 sm:text-sm sm:leading-6"
-              placeholder="Email address"
+              placeholder="อีเมล"
               onChange={handleChange}
             />
           </div>
           <div>
             <label htmlFor="password" className="sr-only">
-              Password
+              รหัสผ่าน
             </label>
             <input
               id="password"
@@ -162,13 +162,13 @@ export default function SignupPage() {
               autoComplete="new-password"
               required
               className="relative block w-full border-0 p-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-red-600 sm:text-sm sm:leading-6"
-              placeholder="Password"
+              placeholder="รหัสผ่าน"
               onChange={handleChange}
             />
           </div>
           <div>
             <label htmlFor="confirm-password" className="sr-only">
-              Confirm Password
+              ยืนยันรหัสผ่าน
             </label>
             <input
               id="confirm-password"
@@ -177,7 +177,7 @@ export default function SignupPage() {
               autoComplete="new-password"
               required
               className="relative block w-full rounded-b-md border-0 p-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-red-600 sm:text-sm sm:leading-6"
-              placeholder="Confirm Password"
+              placeholder="ยืนยันรหัสผ่าน"
               onChange={handleChange}
             />
           </div>
@@ -196,12 +196,12 @@ export default function SignupPage() {
             htmlFor="terms"
             className="ml-2 block text-sm text-gray-900"
           >
-            I agree to the{" "}
+            ฉันยอมรับ{" "}
             <a
               href="#"
               className="font-medium text-red-600 hover:text-red-500"
             >
-              Terms and Conditions
+              ข้อกำหนดและเงื่อนไข
             </a>
           </label>
         </div>
@@ -211,7 +211,7 @@ export default function SignupPage() {
             type="submit"
             className="group relative flex w-full justify-center rounded-md bg-red-600 px-3 py-3 text-sm font-semibold text-white hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
           >
-            Sign up
+            สมัครสมาชิก
           </button>
           
         </div>

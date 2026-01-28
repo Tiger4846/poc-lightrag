@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useState, useRef } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { useNavigation } from "../contexts/NavigationContext";
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -15,6 +16,7 @@ export default function Sidebar() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [folderName, setFolderName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { currentFolderId, refreshFiles } = useNavigation();
   
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -54,6 +56,7 @@ export default function Sidebar() {
         const file = selectedFiles[i];
         const formData = new FormData();
         formData.append("file", file);
+        formData.append("parentId", currentFolderId || "");
         
         try {
           Swal.update({
@@ -83,10 +86,10 @@ export default function Sidebar() {
           text: `อัปโหลดแล้ว ${successCount} ไฟล์`,
           showConfirmButton: false,
           timer: 1500
-        }).then(() => {
+      }).then(async () => {
             setShowUploadModal(false);
             setSelectedFiles([]);
-            window.location.reload();
+            await refreshFiles();
         });
       } else {
         Swal.fire({
@@ -94,10 +97,10 @@ export default function Sidebar() {
           title: 'เสร็จสิ้น',
           text: `สำเร็จ ${successCount} ไฟล์, ล้มเหลว ${failCount} ไฟล์`,
           confirmButtonColor: '#d33'
-        }).then(() => {
+        }).then(async () => {
           setShowUploadModal(false);
           setSelectedFiles([]);
-          window.location.reload();
+          await refreshFiles();
         });
       }
 
@@ -107,6 +110,62 @@ export default function Sidebar() {
         icon: 'error',
         title: 'เกิดข้อผิดพลาด',
         text: 'ไม่สามารถอัปโหลดไฟล์ได้ กรุณาลองใหม่อีกครั้ง',
+        confirmButtonColor: '#d33'
+      });
+    }
+  };
+
+  const handleCreateFolder = async () => {
+    if (!folderName.trim()) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'กรุณาระบุชื่อโฟลเดอร์',
+        text: 'โปรดกรอกชื่อโฟลเดอร์ที่ต้องการสร้าง',
+        confirmButtonColor: '#d33'
+      });
+      return;
+    }
+
+    try {
+      Swal.fire({
+        title: 'กำลังสร้างโฟลเดอร์...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      const token = localStorage.getItem('token');
+      
+      await axios.post('/api/folder', {
+        name: folderName,
+        parentId: currentFolderId,
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      Swal.fire({
+        icon: 'success',
+        title: 'สำเร็จ!',
+        text: 'สร้างโฟลเดอร์เรียบร้อยแล้ว',
+        showConfirmButton: false,
+        timer: 1500
+      }).then(async () => {
+        setShowCreateFolderModal(false);
+        setFolderName("");
+        await refreshFiles();
+      });
+
+    } catch (error: any) {
+      console.error("Create folder error:", error);
+      const errorMessage = error?.response?.data?.message || 'ไม่สามารถสร้างโฟลเดอร์ได้ กรุณาลองใหม่อีกครั้ง';
+      Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด',
+        text: errorMessage,
         confirmButtonColor: '#d33'
       });
     }
@@ -351,12 +410,7 @@ export default function Sidebar() {
               ยกเลิก
             </button>
             <button
-              onClick={() => {
-                // TODO: Handle folder creation
-                console.log("Creating folder:", folderName);
-                setShowCreateFolderModal(false);
-                setFolderName("");
-              }}
+              onClick={handleCreateFolder}
               className="flex-1 px-4 py-2 text-white bg-gradient-to-r from-[#A61919] to-[#FF7B7B] hover:bg-red-700 hover:shadow-lg hover:scale-105 rounded-lg font-medium transition-all duration-200"
             >
               สร้าง

@@ -69,9 +69,7 @@ function convertToFileItem(node: FileNodeFromAPI): FileItem & { id: string } {
   };
 }
 
-/**
- * สร้างโครงสร้างต้นไม้จาก flat array ของ FileNode
- */
+
 export function buildFileTree(fileNodes: FileNodeFromAPI[]): FileItem[] {
   // แปลงทุก node เป็น FileItem พร้อม id
   const itemMap = new Map<string, FileItem & { id: string }>();
@@ -83,6 +81,7 @@ export function buildFileTree(fileNodes: FileNodeFromAPI[]): FileItem[] {
   // สร้างโครงสร้างต้นไม้
   const rootItems: FileItem[] = [];
   
+  // ทำต้นไม้เพือ่นหา parent-child relationship ทำให้รู้ว่าไฟล์ไหนอยู่ภายใต้โฟลเดอร์ไหน
   fileNodes.forEach(node => {
     const item = itemMap.get(node.id);
     if (!item) return;

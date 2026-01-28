@@ -7,44 +7,37 @@ datasource db {
   provider = "postgresql"
 }
 
-enum role {
+enum dir_role {
   USER
   ADMIN
 }
 
-model User {
+model dir_User {
   id             String     @id @default(cuid())
   email          String     @unique
   name           String?
   password       String
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
-  role          role     @default(USER)
+  role          dir_role     @default(USER)
   files          FileNode[]
 }
 
 model FileNode {
   id   String @id @default(uuid())
-  name String // ชื่อไฟล์ หรือ ชื่อโฟลเดอร์
-  type String // "FOLDER" หรือ "FILE"
-
-  // --- ส่วนสำคัญที่สุด (Parent Pointer) ---
-  parentId String? // เก็บ ID ของโฟลเดอร์แม่ (ถ้าเป็น null คืออยู่หน้าแรกสุด/Root)
-
-  // การเชื่อมความสัมพันธ์ (Prisma syntax)
-  parent   FileNode?  @relation("FolderHierarchy", fields: [parentId], references: [id])
-  children FileNode[] @relation("FolderHierarchy")
-  // -------------------------------------
-
-  // ข้อมูลอื่นๆ
-  size       Int? // ขนาดไฟล์ (ถ้าเป็น Folder มักเป็น 0 หรือ null)
-  storageKey String? // ชื่อไฟล์จริงๆ ใน Disk (ถ้าเป็น Folder จะเป็น null)
+  name String 
+  type String 
+  parentId String?
+  size       Int? 
+  storageKey String? 
   createdAt  DateTime @default(now())
-  user       User?    @relation(fields: [userId], references: [id])
+  user       dir_User?    @relation(fields: [userId], references: [id])
   userId     String?
-  
-  // สถานะไฟล์
   recommendStatus Boolean   @default(false)
   deleteStatus    Boolean   @default(false)
   deletedAt       DateTime?
+
+  parent   FileNode?  @relation("FolderHierarchy", fields: [parentId], references: [id])
+  children FileNode[] @relation("FolderHierarchy")
+
 }

@@ -3,73 +3,65 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Swal from 'sweetalert2';
+import { useRouter, useSearchParams } from "next/navigation";
 import Sidebar from "../components/Sidebar";
 import PageHeader from "../components/files/PageHeader";
 import Breadcrumb from "../components/files/Breadcrumb";
 import FileCard from "../components/files/FileCard";
 import FileListItem from "../components/files/FileListItem";
 import { FileItem } from "../types/file";
-import { buildFileTree } from "@/lib/utils/fileMapper";
+import { useNavigation } from "../contexts/NavigationContext";
 
 export default function FilesPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [openMenuIndex, setOpenMenuIndex] = useState<number | null>(null);
   const [openRecommendedMenuIndex, setOpenRecommendedMenuIndex] = useState<number | null>(null);
-  const [currentPath, setCurrentPath] = useState<string[]>([]);
-  const [files, setFiles] = useState<FileItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const nameuser = localStorage.getItem('userName') || 'User';
+  const [nameuser, setNameuser] = useState<string>('User');
   
-  // โหลดข้อมูลจาก API
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { files, currentPath, navigateToFolder, navigateToFolderId, refreshFiles, getCurrentItems } = useNavigation();
+  
+  // โหลด userName จาก localStorage
   useEffect(() => {
-    const fetchFiles = async () => {
-      try {
-        setLoading(true);
-        Swal.fire({
-          title: 'กำลังโหลด...',
-          allowOutsideClick: false,
-          didOpen: () => {
-            Swal.showLoading();
-          }
-        });
-
-        const token = localStorage.getItem('token');
-        if (!token) {
-          Swal.fire({
-            icon: 'error',
-            title: 'กรุณาเข้าสู่ระบบ',
-            text: 'คุณต้องเข้าสู่ระบบก่อนเข้าถึงหน้านี้',
-          });
-          window.location.href = '/login';
-          return;
+    if (typeof window !== 'undefined') {
+      setNameuser(localStorage.getItem('userName') || 'User');
+    }
+  }, []);
+  
+  // โหลดข้อมูลจาก API เมื่อเริ่มต้น
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      Swal.fire({
+        title: 'กำลังโหลด...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
         }
-
-        const response = await axios.get('/api/files', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        const fileTree = buildFileTree(response.data.files);
-        setFiles(fileTree);
+      });
+      
+      try {
+        await refreshFiles();
         Swal.close();
-      } catch (error: unknown) {
-        console.error('Error fetching files:', error);
-        const errorMessage = error && typeof error === 'object' && 'response' in error 
-          ? (error.response as any)?.data?.message 
-          : 'ไม่สามารถโหลดข้อมูลไฟล์ได้';
-        Swal.fire({
-          icon: 'error',
-          title: 'เกิดข้อผิดพลาด',
-          text: errorMessage,
-        });
+      } catch (error) {
+        // Error already handled in context
       } finally {
         setLoading(false);
       }
     };
-
-    fetchFiles();
+    
+    loadData();
   }, []);
+
+  // Sync URL parameter กับ navigation state
+  useEffect(() => {
+    if (files.length === 0) return; // รอให้โหลดไฟล์เสร็จก่อน
+
+    const folderId = searchParams.get('folderId');
+    navigateToFolderId(folderId);
+  }, [searchParams, files]);
 
   const toggleDeleteStatus = async (file: FileItem) => {
     if (!file.id) {
@@ -104,26 +96,8 @@ export default function FilesPage() {
             }
           );
 
-          // อัพเดท state
-          const updateItem = (items: FileItem[]): FileItem[] => {
-            return items.map(item => {
-              if (item.id === file.id) {
-                return {
-                  ...item,
-                  delete_status: true,
-                  deleted_at: new Date()
-                };
-              } else if (item.children) {
-                return {
-                  ...item,
-                  children: updateItem(item.children)
-                };
-              }
-              return item;
-            });
-          };
-
-          setFiles(updateItem(files));
+          // Refresh files to get updated data
+          await refreshFiles();
           setOpenMenuIndex(null);
           setOpenRecommendedMenuIndex(null);
 
@@ -133,11 +107,13 @@ export default function FilesPage() {
             text: 'ไฟล์ถูกย้ายไปถังขยะแล้ว',
             showConfirmButton: false,
             timer: 1500
+          }).then(() => {
+            refreshFiles();
           });
         } catch (error: unknown) {
           console.error('Error deleting file:', error);
           const errorMessage = error && typeof error === 'object' && 'response' in error 
-            ? (error.response as any)?.data?.message 
+            ? (error.response as { data?: { message?: string } })?.data?.message 
             : 'ไม่สามารถลบไฟล์ได้';
           Swal.fire({
             icon: 'error',
@@ -171,25 +147,8 @@ export default function FilesPage() {
         }
       );
 
-      // อัพเดท state
-      const updateItem = (items: FileItem[]): FileItem[] => {
-        return items.map(item => {
-          if (item.id === file.id) {
-            return {
-              ...item,
-              recommend_status: !item.recommend_status
-            };
-          } else if (item.children) {
-            return {
-              ...item,
-              children: updateItem(item.children)
-            };
-          }
-          return item;
-        });
-      };
-
-      setFiles(updateItem(files));
+      // Refresh to get updated data
+      await refreshFiles();
       setOpenMenuIndex(null);
       setOpenRecommendedMenuIndex(null);
 
@@ -203,7 +162,7 @@ export default function FilesPage() {
     } catch (error: unknown) {
       console.error('Error updating file:', error);
       const errorMessage = error && typeof error === 'object' && 'response' in error 
-        ? (error.response as any)?.data?.message 
+        ? (error.response as { data?: { message?: string } })?.data?.message 
         : 'ไม่สามารถอัพเดทไฟล์ได้';
       Swal.fire({
         icon: 'error',
@@ -211,18 +170,6 @@ export default function FilesPage() {
         text: errorMessage,
       });
     }
-  };
-
-  const getCurrentItems = (): FileItem[] => {
-    let items = files;
-    for (const folderName of currentPath) {
-      const folder = items.find(item => item.name === folderName);
-      if (folder && folder.children) {
-        items = folder.children;
-      }
-    }
-    // Filter out deleted items and recommended items from main view
-    return items.filter(item => !item.delete_status && !item.recommend_status);
   };
 
   const getRecommendedFiles = (): FileItem[] => {
@@ -243,7 +190,7 @@ export default function FilesPage() {
     return recommended;
   };
 
-  const folders = getCurrentItems();
+  const currentItems = getCurrentItems();
   const recommendedFiles = getRecommendedFiles();
 
   return (
@@ -256,7 +203,7 @@ export default function FilesPage() {
 
         {/* Content */}
         <main className="flex-1 px-8 pt-6 overflow-auto border border-gray-200 rounded-xl mx-4 mb-4 bg-white">
-          <Breadcrumb currentPath={currentPath} setCurrentPath={setCurrentPath} />
+          <Breadcrumb />
 
           {/* Attachments Section */}
           <section className="mb-8">
@@ -319,7 +266,7 @@ export default function FilesPage() {
             {/* Grid View */}
             {viewMode === "grid" && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {folders.map((folder, index) => (
+                {currentItems.map((folder, index) => (
                   <FileCard
                     key={index}
                     file={folder}
@@ -330,8 +277,8 @@ export default function FilesPage() {
                     }}
                     onCloseMenu={() => setOpenMenuIndex(null)}
                     onNavigate={() => {
-                      if (folder.type === "folder") {
-                        setCurrentPath([...currentPath, folder.name]);
+                      if (folder.type === "folder" && folder.id) {
+                        router.push(`/files?folderId=${folder.id}`);
                         setOpenMenuIndex(null);
                       }
                     }}
@@ -355,7 +302,7 @@ export default function FilesPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {folders.map((folder, index) => (
+                    {currentItems.map((folder, index) => (
                        <FileListItem
                         key={index}
                         file={folder}
@@ -366,8 +313,8 @@ export default function FilesPage() {
                         }}
                         onCloseMenu={() => setOpenMenuIndex(null)}
                         onNavigate={() => {
-                          if (folder.type === "folder") {
-                            setCurrentPath([...currentPath, folder.name]);
+                          if (folder.type === "folder" && folder.id) {
+                            router.push(`/files?folderId=${folder.id}`);
                             setOpenMenuIndex(null);
                           }
                         }}
