@@ -1,16 +1,14 @@
-version: '3.8'
 services:
-  postgres:
-    image: postgres:15
+  app:
+    container_name: swu_app
+    build:
+      context: .
+      dockerfile: Dockerfile
     restart: always
-    environment:
-      - POSTGRES_USER=myuser
-      - POSTGRES_PASSWORD=mypassword
-      - POSTGRES_DB=mydb
     ports:
-      - '5433:5432'
-    volumes: 
-      - postgres_data:/var/lib/postgresql/data
-
-volumes:
-  postgres_data:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@host.docker.internal:5470/${POSTGRES_DB}
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - ./uploads:/app/uploads

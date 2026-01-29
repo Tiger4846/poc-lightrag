@@ -4,6 +4,9 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "SWU Directory - มหาวิทยาลัยศรีนครินทรวิโรฒ",
   description: "ระบบจัดการโฟลเดอร์และไฟล์",
+  icons: {
+    icon: '/swu_logo.webp',
+  },
 };
 
 export default function RootLayout({
