@@ -1,98 +1,94 @@
 "use client";
 
+import { useState } from "react";
 import Sidebar from "../components/Sidebar";
+import PageHeader from "../components/files/PageHeader";
+import FileCard from "../components/files/FileCard";
+import { FileItem } from "../types/file";
+import Swal from 'sweetalert2';
 
 export default function RecentPage() {
-  const pinnedFiles = [
-    { name: "ศูนพ์ใช้ง่อง รุ่น 24.....", type: "image" },
-    { name: "ศูนพ์ใช้ง่อง รุ่น 24.txt", type: "txt" },
+  const [openMenuIndex, setOpenMenuIndex] = useState<{ section: string, index: number } | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [Usersname, setUsersname] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem("userName") || "User";
+    }
+    return "User";
+  });
+
+  const pinnedFiles: FileItem[] = [
+    { name: "ศูนพ์ใช้ง่อง รุ่น 24.....", type: "file", fileType: "image", owner: "Waewpan", date: "now", recommend_status: false, delete_status: false, deleted_at: null },
+    { name: "ศูนพ์ใช้ง่อง รุ่น 24.txt", type: "file", fileType: "txt", owner: "Waewpan", date: "now", recommend_status: false, delete_status: false, deleted_at: null },
   ];
 
-  const recentOpenFiles = [
-    { name: "ศูนพ์ใช้ง่อง รุ่น 24.txt", type: "txt" },
-    { name: "ศูนพ์ใช้ง่อง รุ่น 24.pdf", type: "pdf" },
-    { name: "ศูนพ์ใช้ง่อง รุ่น 24.....", type: "image" },
+  const recentOpenFiles: FileItem[] = [
+    { name: "ศูนพ์ใช้ง่อง รุ่น 24.txt", type: "file", fileType: "txt", owner: "Waewpan", date: "now", recommend_status: false, delete_status: false, deleted_at: null },
+    { name: "ศูนพ์ใช้ง่อง รุ่น 24.pdf", type: "file", fileType: "pdf", owner: "Waewpan", date: "now", recommend_status: false, delete_status: false, deleted_at: null },
+    { name: "ศูนพ์ใช้ง่อง รุ่น 24.....", type: "file", fileType: "image", owner: "Waewpan", date: "now", recommend_status: false, delete_status: false, deleted_at: null },
   ];
 
-  const otherFiles = [
-    { name: "ศูนพ์ใช้ง่อง รุ่น 24.txt", type: "txt" },
-    { name: "ศูนพ์ใช้ง่อง รุ่น 24.....", type: "image" },
-    { name: "ศูนพ์ใช้ง่อง รุ่น 24.pdf", type: "pdf" },
-    { name: "ศูนพ์ใช้ง่อง รุ่น 24.txt", type: "txt" },
-    { name: "ศูนพ์ใช้ง่อง รุ่น 24.....", type: "image" },
+  const otherFiles: FileItem[] = [
+    { name: "ศูนพ์ใช้ง่อง รุ่น 24.txt", type: "file", fileType: "txt", owner: "Waewpan", date: "now", recommend_status: false, delete_status: false, deleted_at: null },
+    { name: "ศูนพ์ใช้ง่อง รุ่น 24.....", type: "file", fileType: "image", owner: "Waewpan", date: "now", recommend_status: false, delete_status: false, deleted_at: null },
+    { name: "ศูนพ์ใช้ง่อง รุ่น 24.pdf", type: "file", fileType: "pdf", owner: "Waewpan", date: "now", recommend_status: false, delete_status: false, deleted_at: null },
+    { name: "ศูนพ์ใช้ง่อง รุ่น 24.txt", type: "file", fileType: "txt", owner: "Waewpan", date: "now", recommend_status: false, delete_status: false, deleted_at: null },
+    { name: "ศูนพ์ใช้ง่อง รุ่น 24.....", type: "file", fileType: "image", owner: "Waewpan", date: "now", recommend_status: false, delete_status: false, deleted_at: null },
   ];
 
-  const FileCard = ({ name, type }: { name: string; type: string }) => {
-    return (
-      <div className="relative group bg-white border border-gray-200 rounded-lg px-3 py-3 hover:shadow-md transition-shadow cursor-pointer flex items-center gap-3 w-[280px]">
-        {type === "pdf" && (
-          <div className="w-10 h-10 bg-red-500 rounded flex items-center justify-center flex-shrink-0">
-            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 2l5 5h-5V4zM8 18v-2h8v2H8zm0-4v-2h8v2H8z"/>
-            </svg>
-          </div>
-        )}
-        {type === "image" && (
-          <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
-            <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-          </div>
-        )}
-        {type === "txt" && (
-          <div className="w-10 h-10 bg-gray-400 rounded flex items-center justify-center flex-shrink-0">
-            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 2l5 5h-5V4zm-2 6h6v2h-6v-2zm0 4h6v2h-6v-2z"/>
-            </svg>
-          </div>
-        )}
-        <div className="flex-1 min-w-0">
-          <div className="text-sm text-gray-900 truncate">{name}</div>
-        </div>
-        <button className="w-6 h-6 hover:bg-gray-100 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-          <span className="text-gray-600">⋯</span>
-        </button>
-      </div>
-    );
+  const handleMockAction = (action: string, fileName: string) => {
+      setOpenMenuIndex(null);
+      Swal.fire({
+          icon: 'success',
+          title: 'สำเร็จ',
+          text: `ทำรายการ ${action} สำหรับ ${fileName} เรียบร้อย`,
+          showConfirmButton: false,
+          timer: 1500
+      });
   };
+
+  const renderFileSection = (title: string, files: FileItem[], sectionId: string) => (
+    <section className="mb-6 md:mb-8">
+        <h2 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">{title}</h2>
+        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+            {files.map((file, index) => (
+                <FileCard 
+                    key={index}
+                    file={file}
+                    isMenuOpen={openMenuIndex?.section === sectionId && openMenuIndex?.index === index}
+                        onToggleMenu={(e) => {
+                            e.stopPropagation();
+                            setOpenMenuIndex(
+                                openMenuIndex?.section === sectionId && openMenuIndex?.index === index 
+                                ? null 
+                                : { section: sectionId, index }
+                            );
+                        }}
+                        onCloseMenu={() => setOpenMenuIndex(null)}
+                        onNavigate={() => {}}
+                    onMoveToTrash={() => handleMockAction('ย้ายไปถังขยะ', file.name)}
+                    onToggleRecommend={() => handleMockAction('แนะนำ', file.name)}
+                />
+            ))}
+        </div>
+    </section>
+  );
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <Sidebar />
+      <Sidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <header className="px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4 flex-1 max-w-2xl bg-gray-100 rounded-full px-4 py-4 shadow-sm">
-            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              placeholder="ค้นหาอาจารย์, ใบเสนอ"
-              className="flex-1 outline-none text-sm text-gray-600 placeholder-gray-400 bg-transparent"
-            />
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-orange-400 rounded-full flex items-center justify-center">
-              <span className="text-white text-xs font-semibold">WT</span>
-            </div>
-            <div className="text-sm">
-              <div className="text-gray-500">: Waewpan</div>
-              <div className="text-gray-500">: ศันติญธมมารณ์</div>
-            </div>
-          </div>
-        </header>
+        <PageHeader name={Usersname} onMenuClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} />
 
         {/* Content */}
-        <main className="flex-1 px-8 pt-6 overflow-auto border border-gray-200 rounded-xl mx-4 mb-4 bg-white">
+        <main className="flex-1 px-2 md:px-4 lg:px-8 pt-4 md:pt-6 overflow-auto border border-gray-200 rounded-xl mx-2 md:mx-4 mb-2 md:mb-4 bg-white">
           {/* Title */}
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-semibold text-gray-900">ล่าสุด</h1>
-            <div className="flex items-center gap-4">
-              <select className="px-3 py-1.5 text-sm border border-gray-300 rounded-md bg-white text-gray-700">
+          <div className="flex items-center justify-between mb-4 md:mb-6">
+            <h1 className="text-xl md:text-2xl font-semibold text-gray-900">ล่าสุด</h1>
+            <div className="flex items-center gap-2 md:gap-4">
+              <select className="px-2 md:px-3 py-1 md:py-1.5 text-xs md:text-sm border border-gray-300 rounded-md bg-white text-gray-700">
                 <option>วันที่ปับ</option>
                 <option>เรียง</option>
                 <option>ชื่อ</option>
@@ -101,35 +97,10 @@ export default function RecentPage() {
             </div>
           </div>
 
-          {/* Pinned Files Section */}
-          <section className="mb-8">
-            <h2 className="text-base font-semibold text-gray-900 mb-4">สิ่งที่ปักหมุด</h2>
-            <div className="flex flex-wrap gap-4">
-              {pinnedFiles.map((file, index) => (
-                <FileCard key={index} name={file.name} type={file.type} />
-              ))}
-            </div>
-          </section>
-
-          {/* Recent Open Files Section */}
-          <section className="mb-8">
-            <h2 className="text-base font-semibold text-gray-900 mb-4">เปิดล่าสุด</h2>
-            <div className="flex flex-wrap gap-4">
-              {recentOpenFiles.map((file, index) => (
-                <FileCard key={index} name={file.name} type={file.type} />
-              ))}
-            </div>
-          </section>
-
-          {/* Other Files Section */}
-          <section>
-            <h2 className="text-base font-semibold text-gray-900 mb-4">อีกแล้ว</h2>
-            <div className="flex flex-wrap gap-4">
-              {otherFiles.map((file, index) => (
-                <FileCard key={index} name={file.name} type={file.type} />
-              ))}
-            </div>
-          </section>
+          {renderFileSection("สิ่งที่ปักหมุด", pinnedFiles, "pinned")}
+          {renderFileSection("เปิดล่าสุด", recentOpenFiles, "recent")}
+          {renderFileSection("อีกแล้ว", otherFiles, "other")}
+          
         </main>
       </div>
     </div>
