@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 
-export default function PageHeader({ name, onMenuClick }: { name: string; onMenuClick?: () => void }) {
+export default function PageHeader({ name, onMenuClick, searchTerm, onSearch }: { name: string; onMenuClick?: () => void; searchTerm?: string; onSearch?: (term: string) => void }) {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -35,7 +35,7 @@ export default function PageHeader({ name, onMenuClick }: { name: string; onMenu
       if (result.isConfirmed) {
         // Clear all localStorage
         localStorage.clear();
-        
+
         // Redirect to login
         router.push("/login");
       }
@@ -45,7 +45,7 @@ export default function PageHeader({ name, onMenuClick }: { name: string; onMenu
   return (
     <header className="px-2 md:px-4 py-3 md:py-4 flex items-center justify-between gap-2">
       {/* Hamburger Menu Button สำหรับ Mobile */}
-      <button 
+      <button
         onClick={onMenuClick}
         className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
         aria-label="เปิดเมนู"
@@ -73,11 +73,13 @@ export default function PageHeader({ name, onMenuClick }: { name: string; onMenu
           type="text"
           placeholder="ค้นหา..."
           className="flex-1 outline-none text-xs md:text-sm text-gray-600 placeholder-gray-400 bg-transparent"
+          value={searchTerm || ''}
+          onChange={(e) => onSearch?.(e.target.value)}
         />
       </div>
 
       <div className="relative" ref={dropdownRef}>
-        <button 
+        <button
           onClick={() => setShowDropdown(!showDropdown)}
           className="flex items-center gap-2 hover:bg-gray-100 p-2 rounded-full transition-colors outline-none"
         >
@@ -94,7 +96,7 @@ export default function PageHeader({ name, onMenuClick }: { name: string; onMenu
 
         {showDropdown && (
           <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
-            <button
+            {/* <button
               onClick={() => {
                 setShowDropdown(false);
                 // TODO: Navigate to settings
@@ -107,7 +109,7 @@ export default function PageHeader({ name, onMenuClick }: { name: string; onMenu
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
               ตั้งค่า
-            </button>
+            </button> */}
             <div className="border-t border-gray-100 my-1"></div>
             <button
               onClick={handleLogout}

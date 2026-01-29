@@ -16,9 +16,7 @@ export async function GET(req: Request) {
 
     // ดึงไฟล์ทั้งหมดของผู้ใช้พร้อม user relation
     const files = await prisma.fileNode.findMany({
-      where: {
-        userId: userId,
-      },
+      where: {},
       include: {
         user: {
           select: {

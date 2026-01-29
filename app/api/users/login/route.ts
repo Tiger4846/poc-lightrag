@@ -1,4 +1,4 @@
-import { NextResponse,NextRequest } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { prisma } from '@/lib/prisma/prisma'
 import bcrypt from 'bcrypt';
 import { generateToken } from '@/lib/auth/jwt';
@@ -7,7 +7,7 @@ import { loginSchema } from '@/lib/zod/schema';
 
 // api ล็อกอินผู้ใช้
 export async function POST(request: NextRequest) {
-    try{
+    try {
         const body = await request.json();
         const safedata = loginSchema.parse(body);
         const { email, password } = safedata;
@@ -15,9 +15,9 @@ export async function POST(request: NextRequest) {
             where: {
                 email: email || undefined,
             },
-            select : {id: true, email: true, password: true, name: true}
+            select: { id: true, email: true, password: true, name: true }
         });
-        
+
         if (!user) {
             return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
         }
@@ -32,14 +32,14 @@ export async function POST(request: NextRequest) {
             email: user.email
         });
 
-        return NextResponse.json({ 
-            status: 201, 
+        return NextResponse.json({
+            status: 201,
             name: user.name,
             token: token,
             userId: user.id
         });
 
-    } catch(error){
+    } catch (error) {
         console.error("Error during login:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }

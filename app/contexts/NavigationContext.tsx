@@ -1,10 +1,10 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import axios from "axios";
 import Swal from "sweetalert2";
 import { FileItem } from "../types/file";
 import { buildFileTree, findFileById } from "@/lib/utils/fileMapper";
+import { fileService } from "@/lib/services/file.service";
 
 interface NavigationContextType {
   files: FileItem[];
@@ -37,20 +37,15 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const response = await axios.get('/api/files', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      const fileTree = buildFileTree(response.data.files);
+      const data = await fileService.getAllFiles();
+      const fileTree = buildFileTree(data.files);
       setFiles(fileTree);
     } catch (error: unknown) {
       console.error('Error fetching files:', error);
-      const errorMessage = error && typeof error === 'object' && 'response' in error 
-        ? (error.response as { data?: { message?: string } })?.data?.message 
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error.response as { data?: { message?: string } })?.data?.message
         : 'ไม่สามารถโหลดข้อมูลไฟล์ได้';
-      
+
       Swal.fire({
         icon: 'error',
         title: 'เกิดข้อผิดพลาด',
@@ -88,7 +83,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
     // ค้นหา folder ด้วย ID
     const result = findFileById(files, folderId);
-    
+
     if (!result) {
       // ไม่เจอ folder
       Swal.fire({
@@ -125,7 +120,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     // ตั้งค่า path (ไม่รวมชื่อ folder ตัวเอง)
     const pathToFolder = result.path.slice(0, -1);
     setCurrentPath(pathToFolder);
-    
+
     // แล้วค่อย navigate เข้าไปใน folder
     setCurrentPath(result.path);
     return true;
@@ -134,10 +129,10 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   // ฟังก์ชันหา current folder ID
   const getCurrentFolderId = (): string | null => {
     if (currentPath.length === 0) return null;
-    
+
     let items = files;
     let currentFolder: FileItem | null = null;
-    
+
     for (const folderName of currentPath) {
       const folder = items.find(item => item.name === folderName && item.type === "folder");
       if (folder && folder.id) {
@@ -145,7 +140,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
         items = folder.children || [];
       }
     }
-    
+
     return currentFolder?.id || null;
   };
 
@@ -158,7 +153,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
         items = folder.children;
       }
     }
-    return items.filter(item => !item.delete_status && !item.recommend_status);
+    return items.filter(item => !item.delete_status);
   };
 
   const value: NavigationContextType = {

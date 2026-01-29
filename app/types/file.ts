@@ -9,4 +9,5 @@ export type FileItem = {
   recommend_status: boolean;
   delete_status: boolean;
   deleted_at: Date | null;
+  createdAt: Date;
 };

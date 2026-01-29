@@ -10,42 +10,42 @@ import axios from "axios";
 export default function LoginPage() {
   const router = useRouter();
 
-  const [userdata , setUserdata] = useState({
-    email : "",
-    password : ""
+  const [userdata, setUserdata] = useState({
+    email: "",
+    password: ""
   });
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-try {
-  const response = await axios.post('/api/users/login', {
-     email: userdata.email,
-     password: userdata.password
-  });
+    try {
+      const response = await axios.post('/api/users/login', {
+        email: userdata.email,
+        password: userdata.password
+      });
 
-  if (response.status === 200 || response.data.status === 200) {
-      // เก็บ token และ userId ใน localStorage
-      if (response.data.token) {
+      if (response.status === 200 || response.data.status === 200) {
+        // เก็บ token และ userId ใน localStorage
+        if (response.data.token) {
           localStorage.setItem('token', response.data.token);
           localStorage.setItem('userId', response.data.userId);
           localStorage.setItem('userName', response.data.name);
-      }
-      
-      Swal.fire({
+        }
+
+        Swal.fire({
           icon: 'success',
           title: 'เข้าสู่ระบบสำเร็จ',
           timer: 1500
-      }).then(() => {
+        }).then(() => {
           router.push("/files");
-      });
-  } 
-  } catch (error : any) {
+        });
+      }
+    } catch (error: any) {
       Swal.fire({
-          icon: 'error',
-          title: 'เข้าสู่ระบบไม่สำเร็จ',
-          text: error.response?.data?.error || 'กรุณาตรวจสอบข้อมูล',
+        icon: 'error',
+        title: 'เข้าสู่ระบบไม่สำเร็จ',
+        text: error.response?.data?.error || 'กรุณาตรวจสอบข้อมูล',
       });
     }
-    };
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -55,7 +55,7 @@ try {
     }));
   };
 
-    
+
 
   const footerLink = (
     <>

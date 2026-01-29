@@ -2,14 +2,36 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma/prisma";
 import { getUserIdFromRequest } from "@/lib/auth/jwt";
 
+// Helper function to check permission
+async function checkPermission(fileId: string, userId: string): Promise<{ allowed: boolean; file?: any }> {
+  const user = await prisma.dir_User.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  });
 
-//api อัพเดทสถานะไฟล์
+  if (!user) return { allowed: false };
+
+  // If Admin, can access any file
+  // If User, must own the file
+  const whereClause = user.role === 'ADMIN'
+    ? { id: fileId }
+    : { id: fileId, userId: userId };
+
+  const file = await prisma.fileNode.findFirst({
+    where: whereClause,
+  });
+
+  console.log(file);
+
+  return { allowed: !!file, file };
+}
+
+// Update file status (Soft delete, Recommend, Rename, etc.)
 export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // ตรวจสอบ authentication
     const userId = getUserIdFromRequest(req);
     if (!userId) {
       return NextResponse.json(
@@ -22,22 +44,22 @@ export async function PUT(
     const body = await req.json();
     const { recommendStatus, deleteStatus } = body;
 
-    // ตรวจสอบว่าไฟล์เป็นของผู้ใช้หรือไม่
-    const existingFile = await prisma.fileNode.findFirst({
-      where: {
-        id: id,
-        userId: userId,
-      },
-    });
+    // Check Permission
+    const { allowed, file: existingFile } = await checkPermission(id, userId);
 
-    if (!existingFile) {
+    if (!allowed) {
       return NextResponse.json(
-        { message: "File not found or unauthorized" },
+        { message: "คุณไม่ได้รับอนุญาตให้แก้ไขไฟล์นี้" },
+        { status: 401 }
+      );
+    } else if (!existingFile) {
+      return NextResponse.json(
+        { message: "ไม่พบไฟล์" },
         { status: 404 }
       );
     }
 
-    // เตรียมข้อมูลสำหรับอัพเดท
+    // Update data preparation
     const updateData: {
       recommendStatus?: boolean;
       deleteStatus?: boolean;
@@ -50,16 +72,13 @@ export async function PUT(
 
     if (typeof deleteStatus === "boolean") {
       updateData.deleteStatus = deleteStatus;
-      // ถ้าลบ ให้ตั้ง deletedAt
       if (deleteStatus === true) {
         updateData.deletedAt = new Date();
       } else {
-        // ถ้ายกเลิกการลบ ให้เคลียร์ deletedAt
         updateData.deletedAt = null;
       }
     }
 
-    // อัพเดทไฟล์
     const updatedFile = await prisma.fileNode.update({
       where: { id: id },
       data: updateData,
@@ -76,6 +95,52 @@ export async function PUT(
     console.error("Error updating file:", error);
     return NextResponse.json(
       { message: "Error updating file", error },
+      { status: 500 }
+    );
+  }
+}
+
+// Delete file permanently
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const userId = getUserIdFromRequest(req);
+    if (!userId) {
+      return NextResponse.json(
+        { message: "Unauthorized - Please login first" },
+        { status: 401 }
+      );
+    }
+
+    const { id } = await params;
+
+    // Check Permission
+    const { allowed, file: existingFile } = await checkPermission(id, userId);
+
+    if (!allowed || !existingFile) {
+      return NextResponse.json(
+        { message: "File not found or unauthorized to delete" },
+        { status: 403 }
+      );
+    }
+
+    // Delete the file
+    // Note: If it's a folder, this might fail if it has children and no cascade delete is set in DB.
+    // For now, simple delete.
+    await prisma.fileNode.delete({
+      where: { id: id },
+    });
+
+    return NextResponse.json(
+      { message: "File deleted permanently" },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error deleting file:", error);
+    return NextResponse.json(
+      { message: "Error deleting file", error },
       { status: 500 }
     );
   }
