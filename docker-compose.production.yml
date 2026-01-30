@@ -1,0 +1,14 @@
+services:
+  app:
+    container_name: swu_directory_app
+    image: ${REGISTRY_PATH}/${IMAGE_NAME}:${IMAGE_VERSION}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.production
+    volumes:
+      - ./uploads:/app/uploads
