@@ -5,20 +5,20 @@ import path from "path";
 
 
 // api ลบไฟล์ที่ถูกลบถาวรเกิน 30 วัน
-export async function DELETE(req: Request) {
+export async function POST(req: Request) {
     try {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
         const filestoDelete = await prisma.fileNode.findMany({
-            where:{
+            where: {
                 deleteStatus: true,
                 deletedAt: {
                     lte: thirtyDaysAgo,
                 },
             }
         })
-        
+
         const uploaddir = path.join(process.cwd(), 'uploads');
         for (const file of filestoDelete) {
             if (file.storageKey) {
@@ -32,7 +32,7 @@ export async function DELETE(req: Request) {
         }
 
         await prisma.fileNode.deleteMany({
-            where : {
+            where: {
                 id: {
                     in: filestoDelete.map(file => file.id)
                 }

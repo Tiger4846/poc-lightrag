@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { unlink } from "fs/promises";
+import path from "path";
 import { prisma } from "@/lib/prisma/prisma";
 import { getUserIdFromRequest } from "@/lib/auth/jwt";
 
@@ -101,7 +103,7 @@ export async function PUT(
 }
 
 // Delete file permanently
-export async function DELETE(
+export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -129,6 +131,18 @@ export async function DELETE(
     // Delete the file
     // Note: If it's a folder, this might fail if it has children and no cascade delete is set in DB.
     // For now, simple delete.
+
+    // Try to delete physical file if it exists
+    if (existingFile.type === 'FILE' && existingFile.storageKey) {
+      try {
+        const filePath = path.join(process.cwd(), "uploads", existingFile.storageKey);
+        await unlink(filePath);
+      } catch (err) {
+        console.error("Error deleting physical file:", err);
+        // Continue to delete from DB even if physical file is missing or delete fails
+      }
+    }
+
     await prisma.fileNode.delete({
       where: { id: id },
     });

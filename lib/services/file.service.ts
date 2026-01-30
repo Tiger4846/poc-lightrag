@@ -52,7 +52,7 @@ export const fileService = {
 
     // Delete file permanently
     deleteFilePermanently: async (id: string) => {
-        const response = await axios.delete(`/api/files/${id}`, getAuthHeaders());
+        const response = await axios.post(`/api/files/${id}`, {}, getAuthHeaders());
         return response.data;
     },
 
