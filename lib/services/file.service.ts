@@ -46,7 +46,7 @@ export const fileService = {
 
     // Update file (rename, move, soft delete, recommend)
     updateFile: async (id: string, data: any) => {
-        const response = await axios.put(`/api/files/${id}`, data, getAuthHeaders());
+        const response = await axios.patch(`/api/files/${id}`, data, getAuthHeaders());
         return response.data;
     },
 

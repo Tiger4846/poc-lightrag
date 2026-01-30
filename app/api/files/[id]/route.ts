@@ -29,7 +29,7 @@ async function checkPermission(fileId: string, userId: string): Promise<{ allowe
 }
 
 // Update file status (Soft delete, Recommend, Rename, etc.)
-export async function PUT(
+export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
