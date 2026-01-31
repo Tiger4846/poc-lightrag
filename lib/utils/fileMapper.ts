@@ -11,6 +11,7 @@ interface FileNodeFromAPI {
   userId: string | null;
   recommendStatus: boolean;
   deleteStatus: boolean;
+  ocrStatus: boolean;
   deletedAt: string | null;
   user?: {
     name: string | null;
@@ -60,6 +61,7 @@ function convertToFileItem(node: FileNodeFromAPI): FileItem & { id: string } {
     fileType: node.type === "FILE" ? getFileType(node.name) : undefined,
     recommend_status: node.recommendStatus,
     delete_status: node.deleteStatus,
+    ocr_status: node.ocrStatus,
     deleted_at: node.deletedAt ? new Date(node.deletedAt) : null,
     createdAt: new Date(node.createdAt),
     children: [],

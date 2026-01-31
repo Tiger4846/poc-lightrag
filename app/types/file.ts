@@ -8,6 +8,7 @@ export type FileItem = {
   children?: FileItem[];
   recommend_status: boolean;
   delete_status: boolean;
+  ocr_status: boolean;
   deleted_at: Date | null;
   createdAt: Date;
 };

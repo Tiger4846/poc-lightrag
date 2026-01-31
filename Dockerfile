@@ -45,6 +45,9 @@ ENV NODE_ENV=production
 # Uncomment the following line in case you want to disable telemetry during runtime.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
+# Install GraphicsMagick and Ghostscript for PDF to image conversion (OCR)
+RUN apk add --no-cache graphicsmagick ghostscript
+
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
@@ -59,8 +62,8 @@ RUN chown nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Create uploads directory and set permissions
-RUN mkdir -p /app/uploads && chown nextjs:nodejs /app/uploads
+# Create uploads and markdown directories and set permissions
+RUN mkdir -p /app/uploads /app/markdown /app/temp && chown -R nextjs:nodejs /app/uploads /app/markdown /app/temp
 
 USER nextjs
 

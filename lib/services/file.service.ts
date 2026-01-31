@@ -63,5 +63,29 @@ export const fileService = {
             responseType: 'blob'
         });
         return URL.createObjectURL(response.data);
+    },
+
+    // Get OCR status summary
+    getOcrStatus: async () => {
+        const response = await axios.get('/api/files/ocr', getAuthHeaders());
+        return response.data;
+    },
+
+    // OCR all files
+    ocrAllFiles: async () => {
+        const response = await axios.post('/api/files/ocr', {}, getAuthHeaders());
+        return response.data;
+    },
+
+    // OCR single file
+    ocrSingleFile: async (id: string) => {
+        const response = await axios.post(`/api/files/${id}/ocr`, {}, getAuthHeaders());
+        return response.data;
+    },
+
+    // Get OCR result for a file
+    getOcrResult: async (id: string) => {
+        const response = await axios.get(`/api/files/${id}/ocr`, getAuthHeaders());
+        return response.data;
     }
 };

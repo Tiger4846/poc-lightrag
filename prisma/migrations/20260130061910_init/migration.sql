@@ -24,6 +24,7 @@ CREATE TABLE "FileNode" (
     "storageKey" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userId" TEXT,
+    "ocrStatus" BOOLEAN NOT NULL DEFAULT false,
     "recommendStatus" BOOLEAN NOT NULL DEFAULT false,
     "deleteStatus" BOOLEAN NOT NULL DEFAULT false,
     "deletedAt" TIMESTAMP(3),
