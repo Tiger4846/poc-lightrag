@@ -12,16 +12,28 @@ import { createWriteStream } from "fs";
 export async function POST(req: Request) {
     try {
         // ตรวจสอบ authentication
-        const userId = getUserIdFromRequest(req);
-        if (!userId) {
-            return NextResponse.json(
-                { message: "Unauthorized - Please login first" },
-                { status: 401 }
-            );
+        // ตรวจสอบ authentication (Support API Key)
+        const apiKey = req.headers.get("x-api-key");
+        const validApiKey = process.env.UPLOAD_API_KEY;
+        let userId: string | null = null;
+
+        if (apiKey && validApiKey && apiKey === validApiKey) {
+            // กรณีใช้ API Key ให้ userId เป็น null (upload โดย service ภายนอก)
+            userId = null;
+        } else {
+            // กรณีปกติใช้ JWT
+            userId = getUserIdFromRequest(req);
+            if (!userId) {
+                return NextResponse.json(
+                    { message: "Unauthorized - Please login first" },
+                    { status: 401 }
+                );
+            }
         }
 
 
         const data = await req.formData();
+        console.log("data --->", data);
         const file: File | null = data.get("file") as unknown as File;
         if (!file) {
             return NextResponse.json({ message: "No file provided" }, { status: 400 });
@@ -38,12 +50,15 @@ export async function POST(req: Request) {
         // Create unique filename based on original name
         // Check if file exists, if so append timestamp
         const fs = require('fs');
-        let uniqueFileName = file.name;
+        // Decode filename to handle URL encoded names
+        const originalName = decodeURIComponent(file.name);
+
+        let uniqueFileName = originalName;
         let filePath = path.join(uploadDir, uniqueFileName);
 
         if (fs.existsSync(filePath)) {
-            const nameWithoutExt = path.parse(file.name).name;
-            const ext = path.parse(file.name).ext;
+            const nameWithoutExt = path.parse(originalName).name;
+            const ext = path.parse(originalName).ext;
             const timestamp = Date.now();
             uniqueFileName = `${nameWithoutExt}_${timestamp}${ext}`;
             filePath = path.join(uploadDir, uniqueFileName);
@@ -56,9 +71,9 @@ export async function POST(req: Request) {
 
         // บันทึกข้อมูลไฟล์ลงฐานข้อมูล
 
-        await prisma.fileNode.create({
+        const newFile = await prisma.fileNode.create({
             data: {
-                name: file.name,
+                name: originalName,
                 type: "FILE",
                 storageKey: uniqueFileName,
                 size: file.size,
@@ -68,7 +83,11 @@ export async function POST(req: Request) {
             },
         });
 
-        return NextResponse.json({ message: "File uploaded successfully", fileName: uniqueFileName }, { status: 200 });
+        return NextResponse.json({
+            message: "File uploaded successfully",
+            fileName: uniqueFileName,
+            id: newFile.id
+        }, { status: 200 });
     } catch (error) {
         return NextResponse.json({ message: "Error uploading file", error }, { status: 500 });
     }
