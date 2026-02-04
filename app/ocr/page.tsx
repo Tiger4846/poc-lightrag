@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Swal from 'sweetalert2';
-import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
 import Sidebar from "../components/Sidebar";
 import PageHeader from "../components/files/PageHeader";
 import FileCard from "../components/files/FileCard";
@@ -31,14 +29,15 @@ export default function OcrPage() {
     const [ocrStatus, setOcrStatus] = useState({
         totalFiles: 0,
         ocrCompleted: 0,
-        ocrPending: 0
+        ocrPending: 0,
+        ocrUnprocessed: 0,
+        ocrProcessing: 0,
+        ocrFailed: 0
     });
-    const [ocrLoading, setOcrLoading] = useState(false);
+    // ocrLoading removed as it was unused
     const [isProcessingOcr, setIsProcessingOcr] = useState(false);
 
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const { files, refreshFiles, getCurrentItems } = useNavigation();
+    const { files, refreshFiles } = useNavigation();
     const { toggleDeleteStatus: deleteFileAction, toggleRecommendStatus: recommendFileAction } = useFileActions();
 
     // โหลด userName จาก localStorage and mark as mounted
@@ -52,13 +51,18 @@ export default function OcrPage() {
     // Fetch OCR status
     const fetchOcrStatus = async () => {
         try {
-            setOcrLoading(true);
             const data = await fileService.getOcrStatus();
-            setOcrStatus(data);
+            // Ensure all fields exist with fallback values
+            setOcrStatus({
+                totalFiles: data.totalFiles || 0,
+                ocrCompleted: data.ocrCompleted || 0,
+                ocrPending: data.ocrPending || 0,
+                ocrUnprocessed: data.ocrUnprocessed || 0,
+                ocrProcessing: data.ocrProcessing || 0,
+                ocrFailed: data.ocrFailed || 0
+            });
         } catch (error) {
             console.error('Error fetching OCR status:', error);
-        } finally {
-            setOcrLoading(false);
         }
     };
 
@@ -175,15 +179,11 @@ export default function OcrPage() {
             await refreshFiles();
 
             Swal.fire({
-                icon: 'success',
-                title: 'OCR เสร็จสิ้น!',
+                icon: 'info',
+                title: 'อัปโหลด OCR',
                 html: `
-                    <div class="text-left">
+                    <div class="text-center">
                         <p><strong>${file.name}</strong></p>
-                        <p class="text-sm text-gray-600 mt-2">ข้อความที่พบ:</p>
-                        <div style="background: #f3f4f6; padding: 12px; border-radius: 8px; margin-top: 8px; max-height: 160px; overflow: auto; font-size: 14px;">
-                            ${data.ocrText?.substring(0, 500) || 'ไม่พบข้อความ'}...
-                        </div>
                     </div>
                 `,
                 confirmButtonColor: '#A61919',
@@ -196,6 +196,66 @@ export default function OcrPage() {
                 title: 'เกิดข้อผิดพลาด',
                 text: error?.response?.data?.message || 'ไม่สามารถทำ OCR ได้',
             });
+        }
+    };
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleUploadAndOcr = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        try {
+            // 1. Upload
+            Swal.fire({
+                title: 'กำลังอัปโหลด...',
+                html: 'กรุณารอสักครู่',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const uploadRes = await fileService.uploadFile(formData);
+            const fileId = uploadRes.fileId;
+
+            await refreshFiles();
+
+            // 2. Trigger OCR
+            Swal.fire({
+                title: 'กำลังประมวลผล OCR...',
+                html: `ไฟล์: ${file.name}<br>กำลังส่งข้อมูลไปที่บริการ OCR...<br>ระบบจะทำการประมวลผลเบื้องหลัง`,
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            // Start OCR
+            await fileService.ocrSingleFile(fileId);
+
+            // Fetch status immediately to see PENDING
+            await fetchOcrStatus();
+            await refreshFiles();
+
+            Swal.fire({
+                icon: 'success',
+                title: 'ส่งเข้าคิว OCR แล้ว!',
+                text: 'ระบบกำลังประมวลผล คุณสามารถดูสถานะได้ในรายการ',
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+        } catch (error: any) {
+            console.error('Upload & OCR error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด',
+                text: error?.response?.data?.message || 'ไม่สามารถดำเนินการได้',
+            });
+        } finally {
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
         }
     };
 
@@ -229,10 +289,22 @@ export default function OcrPage() {
             return items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         }
         if (sortBy === 'ocr_pending') {
-            return items.sort((a, b) => (a.ocr_status === b.ocr_status ? 0 : a.ocr_status ? 1 : -1));
+            // Priority: UNPROCESSED > PENDING > FAILED > SUCCESS
+            const priority = { 'UNPROCESSED': 0, 'PENDING': 1, 'FAILED': 2, 'SUCCESS': 3 };
+            return items.sort((a, b) => {
+                const pa = priority[a.ocr_status as keyof typeof priority] ?? 0;
+                const pb = priority[b.ocr_status as keyof typeof priority] ?? 0;
+                return pa - pb;
+            });
         }
         if (sortBy === 'ocr_completed') {
-            return items.sort((a, b) => (a.ocr_status === b.ocr_status ? 0 : a.ocr_status ? -1 : 1));
+            // Priority: SUCCESS > FAILED > PENDING > UNPROCESSED
+            const priority = { 'SUCCESS': 0, 'FAILED': 1, 'PENDING': 2, 'UNPROCESSED': 3 };
+            return items.sort((a, b) => {
+                const pa = priority[a.ocr_status as keyof typeof priority] ?? 3;
+                const pb = priority[b.ocr_status as keyof typeof priority] ?? 3;
+                return pa - pb;
+            });
         }
         return items;
     }, [searchResults, sortBy]);
@@ -283,79 +355,114 @@ export default function OcrPage() {
 
                     {/* OCR Status Card */}
                     <section className="mb-6 md:mb-8">
-                        <div className="bg-gradient-to-r from-[#A61919] to-[#FF7B7B] rounded-xl p-6 text-white">
+                        <div className="bg-gray-50/20 rounded-xl p-6 text-white border border-gray-200">
                             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                                 {/* Left Side - Status Info */}
                                 <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <h3 className="text-xl font-bold">สถานะ OCR</h3>
-                                            <p className="text-white/80 text-sm">ระบบแปลงรูปภาพเป็นข้อความ</p>
-                                        </div>
-                                    </div>
+                                    <div className="flex items-center justify-between gap-3 mb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
+                                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <div className="flex flex-col">
+                                                    <div className="flex flex-row justify-between">
+                                                        <h3 className="text-xl text-black font-bold">สถานะ OCR</h3>
+                                                    </div>
+                                                    <p className="text-black/80 text-sm">ระบบแปลงรูปภาพเป็นข้อความ</p>
+                                                </div>
 
-                                    {/* Progress Bar */}
-                                    <div className="mb-4">
-                                        <div className="flex justify-between text-sm mb-2">
-                                            <span>ความคืบหน้า</span>
-                                            <span>{progress.toFixed(1)}%</span>
+                                            </div>
                                         </div>
-                                        <div className="w-full bg-white/20 rounded-full h-3">
-                                            <div
-                                                className="bg-white rounded-full h-3 transition-all duration-500"
-                                                style={{ width: `${progress}%` }}
-                                            ></div>
+
+                                        {/* Right Side - Actions */}
+                                        <div className="md:ml-6 flex flex-col md:flex-row gap-3">
+                                            {ocrStatus.ocrUnprocessed > 0 && (
+                                                <button
+                                                    onClick={handleOcrAllFiles}
+                                                    disabled={isProcessingOcr}
+                                                    className="w-full md:w-auto px-6 py-3 bg-white text-[#A61919] rounded-xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                                >
+                                                    {isProcessingOcr ? (
+                                                        <>
+                                                            <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                            </svg>
+                                                            กำลังประมวลผล...
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                                            </svg>
+                                                            OCR ทั้งหมด ({ocrStatus.ocrUnprocessed} ไฟล์)
+                                                        </>
+                                                    )}
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
 
                                     {/* Stats */}
-                                    <div className="grid grid-cols-3 gap-4 text-center">
-                                        <div className="bg-white/10 rounded-lg p-3">
-                                            <div className="text-2xl font-bold">{ocrStatus.totalFiles}</div>
-                                            <div className="text-xs text-white/80">ไฟล์ทั้งหมด</div>
+                                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-center px-4 mt-6">
+                                        {/* Total Files */}
+                                        <div className="bg-gray-300/20 text-start rounded-lg p-3 border border-gray-200 h-full">
+                                            <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                            </div>
+                                            <div className="text-2xl text-black font-bold my-2">{ocrStatus.totalFiles}</div>
+                                            <div className="text-xs text-black">ไฟล์ทั้งหมด</div>
                                         </div>
-                                        <div className="bg-white/10 rounded-lg p-3">
-                                            <div className="text-2xl font-bold">{ocrStatus.ocrCompleted}</div>
-                                            <div className="text-xs text-white/80">OCR เสร็จแล้ว</div>
+
+                                        {/* Success */}
+                                        <div className="bg-green-500/20 text-start rounded-lg p-3 border border-gray-200 h-full">
+                                            <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                                                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                </svg>
+                                            </div>
+                                            <div className="text-2xl text-black font-bold my-2">{ocrStatus.ocrCompleted}</div>
+                                            <div className="text-xs text-black">เสร็จแล้ว</div>
                                         </div>
-                                        <div className="bg-white/10 rounded-lg p-3">
-                                            <div className="text-2xl font-bold">{ocrStatus.ocrPending}</div>
-                                            <div className="text-xs text-white/80">รอดำเนินการ</div>
+
+                                        {/* Processing */}
+                                        <div className="bg-blue-500/20 text-start rounded-lg p-3 border border-gray-200 h-full">
+                                            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                                                <svg className="w-5 h-5 text-white animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                </svg>
+                                            </div>
+                                            <div className="text-2xl text-black font-bold my-2">{ocrStatus.ocrProcessing}</div>
+                                            <div className="text-xs text-black">กำลังทำ</div>
+                                        </div>
+
+                                        {/* Waiting/Unprocessed */}
+                                        <div className="bg-yellow-500/20 text-start rounded-lg p-3 border border-gray-200 h-full">
+                                            <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                                                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                                                </svg>
+                                            </div>
+                                            <div className="text-2xl text-black font-bold my-2">{ocrStatus.ocrUnprocessed}</div>
+                                            <div className="text-xs text-black">รอดำเนินการ</div>
+                                        </div>
+
+                                        {/* Failed */}
+                                        <div className="bg-red-500/20 text-start rounded-lg p-3 border border-gray-200 h-full">
+                                            <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+                                                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </div>
+                                            <div className="text-2xl text-black font-bold my-2">{ocrStatus.ocrFailed}</div>
+                                            <div className="text-xs text-black">ล้มเหลว</div>
                                         </div>
                                     </div>
                                 </div>
-
-                                {/* Right Side - OCR Button */}
-                                {ocrStatus.ocrPending > 0 && (
-                                    <div className="md:ml-6">
-                                        <button
-                                            onClick={handleOcrAllFiles}
-                                            disabled={isProcessingOcr}
-                                            className="w-full md:w-auto px-6 py-3 bg-white text-[#A61919] rounded-xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                                        >
-                                            {isProcessingOcr ? (
-                                                <>
-                                                    <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                                    </svg>
-                                                    กำลังประมวลผล...
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                                    </svg>
-                                                    OCR ทั้งหมด ({ocrStatus.ocrPending} ไฟล์)
-                                                </>
-                                            )}
-                                        </button>
-                                    </div>
-                                )}
                             </div>
                         </div>
                     </section>
@@ -364,7 +471,7 @@ export default function OcrPage() {
                     <section>
                         <div className="flex items-center justify-between mb-3 md:mb-4">
                             <h2 className="text-xl md:text-2xl font-semibold text-gray-900">
-                                {searchTerm ? `ผลการค้นหา "${searchTerm}" (${sortedItems.length})` : `ไฟล์ทั้งหมด (${sortedItems.length})`}
+                                {mounted ? (searchTerm ? `ผลการค้นหา "${searchTerm}" (${sortedItems.length})` : `ไฟล์ทั้งหมด (${sortedItems.length})`) : `ไฟล์ทั้งหมด (0)`}
                             </h2>
                             <select
                                 value={sortBy}
@@ -379,7 +486,20 @@ export default function OcrPage() {
                             </select>
                         </div>
 
-                        {sortedItems.length === 0 ? (
+                        {!mounted ? (
+                            /* Loading State - Shown during SSR and initial client render */
+                            <div className="flex flex-col items-center justify-center min-h-[400px] md:h-[calc(100vh-500px)]">
+                                <div className="w-full max-w-[200px] md:max-w-[280px] h-auto mb-6 md:mb-8">
+                                    <svg className="w-full h-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                </div>
+                                <h2 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">กำลังโหลด...</h2>
+                                <p className="text-sm text-gray-600 text-center max-w-md px-4 md:px-0">
+                                    กรุณารอสักครู่
+                                </p>
+                            </div>
+                        ) : sortedItems.length === 0 ? (
                             /* Empty State */
                             <div className="flex flex-col items-center justify-center min-h-[400px] md:h-[calc(100vh-500px)]">
                                 <div className="w-full max-w-[200px] md:max-w-[280px] h-auto mb-6 md:mb-8">
@@ -415,16 +535,20 @@ export default function OcrPage() {
                                                     onToggleRecommend={() => toggleRecommendStatus(file)}
                                                 />
                                                 {/* OCR Status Badge */}
-                                                <div className="absolute top-2 left-2">
-                                                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${file.ocr_status
-                                                        ? 'bg-green-100 text-green-800'
-                                                        : 'bg-yellow-100 text-yellow-800'
+                                                <div className="absolute bottom-2 left-2 z-10">
+                                                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium shadow-sm ${file.ocr_status === 'SUCCESS' ? 'bg-green-100 text-green-800 border border-green-200' :
+                                                        file.ocr_status === 'PENDING' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
+                                                            file.ocr_status === 'FAILED' ? 'bg-red-100 text-red-800 border border-red-200' :
+                                                                'bg-yellow-100 text-yellow-800 border border-yellow-200'
                                                         }`}>
-                                                        {file.ocr_status ? '✓ OCR เสร็จ' : '○ รอ OCR'}
+                                                        {file.ocr_status === 'SUCCESS' ? '✓ OCR' :
+                                                            file.ocr_status === 'PENDING' ? '⟳ กำลังทำ' :
+                                                                file.ocr_status === 'FAILED' ? '✗ ล้มเหลว' :
+                                                                    'รอดำเนินการ'}
                                                     </span>
                                                 </div>
                                                 {/* OCR Button */}
-                                                {!file.ocr_status && (
+                                                {(file.ocr_status === 'UNPROCESSED' || file.ocr_status === 'FAILED') && (
                                                     <button
                                                         onClick={(e) => {
                                                             e.stopPropagation();
@@ -432,7 +556,7 @@ export default function OcrPage() {
                                                         }}
                                                         className="absolute bottom-2 right-2 px-3 py-1.5 bg-gradient-to-r from-[#A61919] to-[#FF7B7B] text-white text-xs rounded-lg hover:shadow-lg transition-all opacity-0 group-hover:opacity-100"
                                                     >
-                                                        OCR
+                                                        {file.ocr_status === 'FAILED' ? 'ลองใหม่' : 'OCR'}
                                                     </button>
                                                 )}
                                             </div>
@@ -469,42 +593,44 @@ export default function OcrPage() {
                                                         <td className="px-6 py-4 text-sm text-gray-600">{file.owner}</td>
                                                         <td className="px-6 py-4 text-sm text-gray-600">{file.date}</td>
                                                         <td className="px-6 py-4">
-                                                            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${file.ocr_status
-                                                                ? 'bg-green-100 text-green-800'
-                                                                : 'bg-yellow-100 text-yellow-800'
+                                                            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${file.ocr_status === 'SUCCESS' ? 'bg-green-100 text-green-800' :
+                                                                file.ocr_status === 'PENDING' ? 'bg-blue-100 text-blue-800' :
+                                                                    file.ocr_status === 'FAILED' ? 'bg-red-100 text-red-800' :
+                                                                        'bg-yellow-100 text-yellow-800'
                                                                 }`}>
-                                                                {file.ocr_status ? (
+                                                                {file.ocr_status === 'SUCCESS' ? (
                                                                     <>
                                                                         <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                                                                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                                                         </svg>
                                                                         OCR เสร็จแล้ว
                                                                     </>
+                                                                ) : file.ocr_status === 'PENDING' ? (
+                                                                    <>
+                                                                        <svg className="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                                        </svg>
+                                                                        กำลังประมวลผล
+                                                                    </>
+                                                                ) : file.ocr_status === 'FAILED' ? (
+                                                                    <>
+                                                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                                        </svg>
+                                                                        ล้มเหลว
+                                                                    </>
                                                                 ) : (
                                                                     <>
                                                                         <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                                                                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                                                                         </svg>
-                                                                        รอ OCR
+                                                                        รอดำเนินการ
                                                                     </>
                                                                 )}
                                                             </span>
                                                         </td>
                                                         <td className="px-6 py-4 text-center">
-                                                            {!file.ocr_status ? (
-                                                                <button
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        handleOcrSingleFile(file);
-                                                                    }}
-                                                                    className="px-4 py-1.5 bg-gradient-to-r from-[#A61919] to-[#FF7B7B] text-white text-sm rounded-lg font-medium hover:shadow-lg hover:scale-105 transition-all duration-200 inline-flex items-center gap-1"
-                                                                >
-                                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                                                    </svg>
-                                                                    OCR
-                                                                </button>
-                                                            ) : (
+                                                            {file.ocr_status === 'SUCCESS' ? (
                                                                 <button
                                                                     onClick={(e) => {
                                                                         e.stopPropagation();
@@ -517,6 +643,23 @@ export default function OcrPage() {
                                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                                                     </svg>
                                                                     ดูผลลัพธ์
+                                                                </button>
+                                                            ) : (
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        if (file.ocr_status !== 'PENDING') handleOcrSingleFile(file);
+                                                                    }}
+                                                                    disabled={file.ocr_status === 'PENDING'}
+                                                                    className={`px-4 py-1.5 text-white text-sm rounded-lg font-medium transition-all duration-200 inline-flex items-center gap-1 ${file.ocr_status === 'PENDING'
+                                                                        ? 'bg-gray-400 cursor-not-allowed'
+                                                                        : 'bg-gradient-to-r from-[#A61919] to-[#FF7B7B] hover:shadow-lg hover:scale-105'
+                                                                        }`}
+                                                                >
+                                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                                                    </svg>
+                                                                    {file.ocr_status === 'FAILED' ? 'ลองใหม่' : 'OCR'}
                                                                 </button>
                                                             )}
                                                         </td>
@@ -541,6 +684,6 @@ export default function OcrPage() {
                 file={ocrResultFile}
                 onClose={() => setOcrResultFile(null)}
             />
-        </div>
+        </div >
     );
 }

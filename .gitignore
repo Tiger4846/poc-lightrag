@@ -44,3 +44,10 @@ next-env.d.ts
 /app/generated/prisma
 
 /uploads
+
+# OCR Service Python Venv
+ocr-service/venv/
+
+# Markdown generated files
+/markdown
+

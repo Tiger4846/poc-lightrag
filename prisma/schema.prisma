@@ -15,7 +15,6 @@ enum dir_role {
   USER
   ADMIN
 }
-
 model dir_User {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -36,8 +35,9 @@ model FileNode {
   storageKey      String?
   createdAt       DateTime  @default(now())
   userId          String?
-  ocrStatus       Boolean   @default(false)
+  ocrStatus       String    @default("UNPROCESSED")
   markdownPath    String?
+
   recommendStatus Boolean   @default(false)
   deleteStatus    Boolean   @default(false)
   deletedAt       DateTime?

@@ -12,3 +12,16 @@ services:
       - JWT_SECRET=${JWT_SECRET}
     volumes:
       - ./uploads:/app/uploads
+      - ./markdown:/app/markdown
+  
+  redis:
+    image: redis:alpine
+    container_name: swu_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:

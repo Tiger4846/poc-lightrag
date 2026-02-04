@@ -24,7 +24,8 @@ CREATE TABLE "FileNode" (
     "storageKey" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userId" TEXT,
-    "ocrStatus" BOOLEAN NOT NULL DEFAULT false,
+    "ocrStatus" TEXT NOT NULL DEFAULT 'UNPROCESSED',
+    "markdownPath" TEXT,
     "recommendStatus" BOOLEAN NOT NULL DEFAULT false,
     "deleteStatus" BOOLEAN NOT NULL DEFAULT false,
     "deletedAt" TIMESTAMP(3),
@@ -36,7 +37,7 @@ CREATE TABLE "FileNode" (
 CREATE UNIQUE INDEX "dir_User_email_key" ON "dir_User"("email");
 
 -- AddForeignKey
-ALTER TABLE "FileNode" ADD CONSTRAINT "FileNode_userId_fkey" FOREIGN KEY ("userId") REFERENCES "dir_User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "FileNode" ADD CONSTRAINT "FileNode_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "FileNode"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "FileNode" ADD CONSTRAINT "FileNode_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "FileNode"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "FileNode" ADD CONSTRAINT "FileNode_userId_fkey" FOREIGN KEY ("userId") REFERENCES "dir_User"("id") ON DELETE SET NULL ON UPDATE CASCADE;

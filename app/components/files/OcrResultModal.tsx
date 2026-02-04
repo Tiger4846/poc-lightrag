@@ -17,7 +17,7 @@ export default function OcrResultModal({ file, onClose }: OcrResultModalProps) {
         setMarkdownContent(null);
         setError(null);
 
-        if (file && file.id && file.ocr_status) {
+        if (file && file.id && file.ocr_status === 'SUCCESS') {
             setLoading(true);
             loadOcrResult();
         }
@@ -102,7 +102,7 @@ export default function OcrResultModal({ file, onClose }: OcrResultModalProps) {
                                 </pre>
                             </div>
                         </div>
-                    ) : !file.ocr_status ? (
+                    ) : file.ocr_status !== 'SUCCESS' ? (
                         <div className="flex flex-col items-center justify-center h-full text-center">
                             <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
                                 <svg className="w-10 h-10 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,11 +118,15 @@ export default function OcrResultModal({ file, onClose }: OcrResultModalProps) {
                 {/* Footer */}
                 <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-between items-center rounded-b-xl">
                     <div className="flex items-center gap-2">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${file.ocr_status
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-yellow-100 text-yellow-800'
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${file.ocr_status === 'SUCCESS' ? 'bg-green-100 text-green-800' :
+                                file.ocr_status === 'PENDING' ? 'bg-blue-100 text-blue-800' :
+                                    file.ocr_status === 'FAILED' ? 'bg-red-100 text-red-800' :
+                                        'bg-yellow-100 text-yellow-800'
                             }`}>
-                            {file.ocr_status ? '✓ OCR เสร็จแล้ว' : '○ รอ OCR'}
+                            {file.ocr_status === 'SUCCESS' ? '✓ OCR เสร็จแล้ว' :
+                                file.ocr_status === 'PENDING' ? '⟳ กำลังทำ' :
+                                    file.ocr_status === 'FAILED' ? '✗ ล้มเหลว' :
+                                        'รอดำเนินการ'}
                         </span>
                     </div>
                     <div className="flex gap-3">

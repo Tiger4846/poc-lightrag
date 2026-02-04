@@ -17,6 +17,7 @@ import logging
 import httpx
 import requests
 import json
+from pdf2image import convert_from_path
 
 # Setup logging
 logging.basicConfig(
@@ -259,10 +260,41 @@ async def perform_ocr(file: UploadFile = File(...)):
         logger.info(f"🔍 Starting OCR...")
         logger.info(f"⏳ This may take a while for large files...")
         
-        if OCR_MODE == "local":
-            markdown = ocr_with_ollama(tmp_path)
+        page_count = 1
+        markdown = ""
+        
+        if ext == '.pdf':
+             logger.info("📄 PDF detected, converting to images...")
+             try:
+                 images = convert_from_path(tmp_path)
+                 page_count = len(images)
+                 logger.info(f"📄 PDF has {page_count} pages")
+                 
+                 results = []
+                 for i, image in enumerate(images):
+                     image_path = f"{tmp_path}_{i}.jpg"
+                     image.save(image_path, "JPEG")
+                     logger.info(f"🔍 Processing Page {i+1}/{page_count}...")
+                     
+                     if OCR_MODE == "local":
+                         text = ocr_with_ollama(image_path)
+                     else:
+                         text = ocr_with_typhoon_api(image_path)
+                     
+                     results.append(f"## Page {i+1}\n\n{text}")
+                     
+                     if os.path.exists(image_path):
+                        os.unlink(image_path)
+                        
+                 markdown = "\n\n---\n\n".join(results)
+             except Exception as pdf_err:
+                 logger.error(f"❌ PDF Processing Error: {pdf_err}")
+                 raise pdf_err
         else:
-            markdown = ocr_with_typhoon_api(tmp_path)
+            if OCR_MODE == "local":
+                markdown = ocr_with_ollama(tmp_path)
+            else:
+                markdown = ocr_with_typhoon_api(tmp_path)
         
         logger.info(f"✅ OCR completed successfully!")
         logger.debug(f"📝 Result length: {len(markdown) if markdown else 0} characters")
@@ -275,7 +307,8 @@ async def perform_ocr(file: UploadFile = File(...)):
             "success": True,
             "filename": file.filename,
             "mode": OCR_MODE,
-            "markdown": markdown
+            "markdown": markdown,
+            "page_count": page_count
         }
         
     except Exception as e:

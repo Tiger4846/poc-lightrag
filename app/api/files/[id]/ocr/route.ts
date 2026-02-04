@@ -152,33 +152,40 @@ export async function POST(
             );
         }
 
-        // Perform OCR via FastAPI service
-        const ocrText = await performOCR(filePath, file.name);
+        // Add to OCR Queue instead of processing synchronously
+        try {
+            const { ocrQueue } = require("@/lib/queue"); // Dynamic import
 
-        // Save OCR result as .md file
-        const markdownPath = await saveOcrResultAsMd(file.id, file.name, ocrText);
+            // Set status to PENDING immediately
+            await prisma.fileNode.update({
+                where: { id: file.id },
+                data: { ocrStatus: 'PENDING' }
+            });
 
-        // Update file with OCR status and markdown path
-        await prisma.fileNode.update({
-            where: { id: file.id },
-            data: {
-                ocrStatus: true,
-                markdownPath: markdownPath,
-            },
-        });
+            await ocrQueue.add("ocr-job", {
+                fileId: file.id,
+                filePath: filePath,
+                fileName: file.name
+            });
+            console.log(`Added manual OCR job for file: ${file.name}`);
+        } catch (queueError) {
+            console.error("Failed to add to OCR queue:", queueError);
+            return NextResponse.json(
+                { message: "Failed to queue OCR job", error: String(queueError) },
+                { status: 500 }
+            );
+        }
 
         return NextResponse.json({
-            message: "OCR completed successfully",
+            message: "OCR job queued successfully",
             fileId: file.id,
-            fileName: file.name,
-            ocrText,
-            markdownPath,
+            status: "queued"
         }, { status: 200 });
 
     } catch (error: any) {
         console.error("OCR error:", error);
         return NextResponse.json(
-            { message: "Error performing OCR", error: error.message },
+            { message: "Error queuing OCR job", error: error.message },
             { status: 500 }
         );
     }
@@ -212,7 +219,7 @@ export async function GET(
             );
         }
 
-        if (!file.ocrStatus) {
+        if (file.ocrStatus !== 'SUCCESS') {
             return NextResponse.json(
                 { message: "OCR not yet performed for this file" },
                 { status: 404 }

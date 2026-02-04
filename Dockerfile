@@ -1,12 +1,18 @@
-FROM node:20-alpine AS base
+FROM node:20-slim AS base
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Install dependencies only when needed
 FROM base AS deps
-# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
-RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install dependencies based on the preferred package manager
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  python3 \
+  make \
+  g++ \
+  openssl \
+  && rm -rf /var/lib/apt/lists/*
+
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 RUN \
   if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
@@ -15,6 +21,16 @@ RUN \
   else echo "Lockfile not found." && exit 1; \
   fi
 
+# Production dependencies only (for worker)
+FROM base AS prod-deps
+WORKDIR /app
+COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+RUN \
+  if [ -f yarn.lock ]; then yarn --frozen-lockfile --production; \
+  elif [ -f package-lock.json ]; then npm ci --only=production; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile --prod; \
+  else echo "Lockfile not found." && exit 1; \
+  fi
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -22,12 +38,10 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Next.js collects completely anonymous telemetry data about general usage.
-# Learn more here: https://nextjs.org/telemetry
-# Uncomment the following line in case you want to disable telemetry during the build.
-# ENV NEXT_TELEMETRY_DISABLED 1
+# Next.js telemetry
+ENV NEXT_TELEMETRY_DISABLED 1
 
-# Generate Prisma Client for the Docker environment
+# Generate Prisma Client
 RUN npx prisma generate
 
 RUN \
@@ -42,35 +56,61 @@ FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-# Uncomment the following line in case you want to disable telemetry during runtime.
-# ENV NEXT_TELEMETRY_DISABLED 1
+ENV NEXT_TELEMETRY_DISABLED 1
 
-# Install GraphicsMagick and Ghostscript for PDF to image conversion (OCR)
-RUN apk add --no-cache graphicsmagick ghostscript
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  python3 \
+  python3-pip \
+  python3-venv \
+  poppler-utils \
+  graphicsmagick \
+  ghostscript \
+  curl \
+  openssl \
+  && rm -rf /var/lib/apt/lists/*
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN groupadd --system --gid 1001 nodejs
+RUN useradd --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
-
-# Set the correct permission for prerender cache
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
 
-# Automatically leverage output traces to reduce image size
-# https://nextjs.org/docs/advanced-features/output-file-tracing
+# Copy Next.js standalone build
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Copy production node_modules (ensures bullmq, ioredis, tsx, prisma client libs are present)
+COPY --from=prod-deps --chown=nextjs:nodejs /app/node_modules ./node_modules
+
+# Copy Prisma Generated Client (if not in standalone)
+COPY --from=builder --chown=nextjs:nodejs /app/app/generated ./app/generated
+
+# Copy Worker and Utils
+COPY --chown=nextjs:nodejs lib ./lib
+COPY --chown=nextjs:nodejs worker.ts ./worker.ts
+COPY --chown=nextjs:nodejs prisma ./prisma
 
 # Create uploads and markdown directories and set permissions
 RUN mkdir -p /app/uploads /app/markdown /app/temp && chown -R nextjs:nodejs /app/uploads /app/markdown /app/temp
 
-USER nextjs
+# --- OCR Service Setup ---
+COPY --chown=nextjs:nodejs ocr-service ./ocr-service
 
-EXPOSE 3000
+# Setup Python Environment
+USER nextjs
+ENV PATH="/app/venv/bin:$PATH"
+RUN python3 -m venv /app/venv && \
+  pip install --no-cache-dir -r ocr-service/requirements.txt
+
+# Copy start script
+COPY --chown=nextjs:nodejs start.sh ./start.sh
+RUN chmod +x start.sh
+
+EXPOSE 3000 8001
 
 ENV PORT=3000
-# set hostname to localhost
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+CMD ["./start.sh"]

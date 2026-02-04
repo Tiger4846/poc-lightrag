@@ -11,7 +11,7 @@ interface FileNodeFromAPI {
   userId: string | null;
   recommendStatus: boolean;
   deleteStatus: boolean;
-  ocrStatus: boolean;
+  ocrStatus: string; // changed from boolean
   deletedAt: string | null;
   user?: {
     name: string | null;
@@ -20,37 +20,28 @@ interface FileNodeFromAPI {
 }
 
 
-//  แปลง extension ของไฟล์เป็นประเภทไฟล์
+function formatThaiDate(dateString: string): string {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("th-TH", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
 function getFileType(fileName: string): "pdf" | "image" | "txt" | "doc" | undefined {
-  const extension = fileName.split(".").pop()?.toLowerCase();
+  const extension = fileName.split('.').pop()?.toLowerCase();
 
-  if (!extension) return undefined;
-
-  if (extension === "pdf") return "pdf";
-  if (["jpg", "jpeg", "png", "gif", "svg", "webp"].includes(extension)) return "image";
-  if (extension === "txt") return "txt";
-  if (["doc", "docx"].includes(extension)) return "doc";
+  if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension || '')) return 'image';
+  if (extension === 'pdf') return 'pdf';
+  if (['doc', 'docx'].includes(extension || '')) return 'doc';
+  if (['txt', 'md'].includes(extension || '')) return 'txt';
 
   return undefined;
 }
 
-//  แปลงวันที่เป็นรูปแบบไทย  
-function formatThaiDate(dateString: string): string {
-  const date = new Date(dateString);
-  const thaiMonths = [
-    "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
-    "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
-  ];
-
-  const day = date.getDate();
-  const month = thaiMonths[date.getMonth()];
-  const year = date.getFullYear() + 543;
-
-  return `${day} ${month} ${year}`;
-}
-
 // แปลง FileNode จาก API เป็น FileItem
-
 function convertToFileItem(node: FileNodeFromAPI): FileItem & { id: string } {
   return {
     id: node.id,
@@ -61,7 +52,7 @@ function convertToFileItem(node: FileNodeFromAPI): FileItem & { id: string } {
     fileType: node.type === "FILE" ? getFileType(node.name) : undefined,
     recommend_status: node.recommendStatus,
     delete_status: node.deleteStatus,
-    ocr_status: node.ocrStatus,
+    ocr_status: (node.ocrStatus || 'UNPROCESSED') as 'SUCCESS' | 'PENDING' | 'FAILED' | 'UNPROCESSED' | 'PROCESSING',
     deleted_at: node.deletedAt ? new Date(node.deletedAt) : null,
     createdAt: new Date(node.createdAt),
     children: [],

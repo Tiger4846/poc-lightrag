@@ -56,7 +56,7 @@ export async function POST(req: Request) {
 
         // บันทึกข้อมูลไฟล์ลงฐานข้อมูล
 
-        await prisma.fileNode.create({
+        const newFile = await prisma.fileNode.create({
             data: {
                 name: file.name,
                 type: "FILE",
@@ -68,7 +68,18 @@ export async function POST(req: Request) {
             },
         });
 
-        return NextResponse.json({ message: "File uploaded successfully", fileName: uniqueFileName }, { status: 200 });
+        // Add to OCR Queue automatically
+        // Auto-queue disabled
+        /*
+        try {
+            const { ocrQueue } = require("@/lib/queue");
+            // ...
+        } catch (queueError) {
+            // ...
+        }
+        */
+
+        return NextResponse.json({ message: "File uploaded successfully", fileName: uniqueFileName, fileId: newFile.id }, { status: 200 });
     } catch (error) {
         return NextResponse.json({ message: "Error uploading file", error }, { status: 500 });
     }

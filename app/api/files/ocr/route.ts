@@ -102,16 +102,19 @@ export async function POST(req: Request) {
             );
         }
 
-        // Get all files that haven't been OCR'd yet
+        // Get all files that haven't been OCR'd successfully yet (UNPROCESSED or FAILED)
         const files = await prisma.fileNode.findMany({
             where: {
                 type: "FILE",
-                ocrStatus: false,
+                ocrStatus: {
+                    in: ["UNPROCESSED", "FAILED"]
+                },
                 deleteStatus: false,
             },
         });
 
-        const results: { id: string; name: string; status: string; message?: string; markdownPath?: string }[] = [];
+        const results: { id: string; name: string; status: string; message?: string }[] = [];
+        const { ocrQueue } = require("@/lib/queue");
 
         for (const file of files) {
             if (!file.storageKey) {
@@ -136,28 +139,32 @@ export async function POST(req: Request) {
             }
 
             try {
-                const ocrText = await performOCR(filePath, file.name);
-
-                // Save OCR result as .md file
-                const markdownPath = await saveOcrResultAsMd(file.id, file.name, ocrText);
-
-                // Update file with OCR status and markdown path
+                // Set status to PENDING immediately
                 await prisma.fileNode.update({
                     where: { id: file.id },
-                    data: {
-                        ocrStatus: true,
-                        markdownPath: markdownPath,
-                    },
+                    data: { ocrStatus: 'PENDING' }
                 });
 
-                results.push({ id: file.id, name: file.name, status: "success", message: "OCR completed", markdownPath });
+                await ocrQueue.add("ocr-job", {
+                    fileId: file.id,
+                    filePath: filePath,
+                    fileName: file.name
+                });
+
+                results.push({ id: file.id, name: file.name, status: "queued", message: "Added to OCR queue" });
             } catch (error: any) {
                 results.push({ id: file.id, name: file.name, status: "error", message: error.message });
+                try {
+                    await prisma.fileNode.update({
+                        where: { id: file.id },
+                        data: { ocrStatus: 'FAILED' }
+                    });
+                } catch (e) { }
             }
         }
 
         return NextResponse.json({
-            message: "OCR process completed",
+            message: "Bulk OCR process initiated",
             total: files.length,
             results,
         }, { status: 200 });
@@ -188,17 +195,40 @@ export async function GET(req: Request) {
         });
 
         const ocrCompleted = await prisma.fileNode.count({
-            where: { type: "FILE", ocrStatus: true, deleteStatus: false },
+            where: { type: "FILE", ocrStatus: "SUCCESS", deleteStatus: false },
         });
 
+        // Pending includes UNPROCESSED and FAILED (can be retried)
         const ocrPending = await prisma.fileNode.count({
-            where: { type: "FILE", ocrStatus: false, deleteStatus: false },
+            where: {
+                type: "FILE",
+                ocrStatus: {
+                    in: ["UNPROCESSED", "FAILED", "PENDING"]
+                },
+                deleteStatus: false
+            },
+        });
+
+        // Breakdown for better detail if needed, but keeping interface compact
+        const ocrProcessing = await prisma.fileNode.count({
+            where: { type: "FILE", ocrStatus: "PENDING", deleteStatus: false },
+        });
+
+        const ocrUnprocessed = await prisma.fileNode.count({
+            where: { type: "FILE", ocrStatus: "UNPROCESSED", deleteStatus: false },
+        });
+
+        const ocrFailed = await prisma.fileNode.count({
+            where: { type: "FILE", ocrStatus: "FAILED", deleteStatus: false },
         });
 
         return NextResponse.json({
             totalFiles,
             ocrCompleted,
-            ocrPending,
+            ocrPending, // This matches the UI 'ocrPending' expectation (files not yet done)
+            ocrProcessing,
+            ocrUnprocessed,
+            ocrFailed
         }, { status: 200 });
 
     } catch (error) {
