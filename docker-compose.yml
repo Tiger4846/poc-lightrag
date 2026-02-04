@@ -12,7 +12,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-swu_directory}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -44,6 +44,14 @@ services:
       - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-swu_directory}
       - REDIS_URL=redis://redis:6379
       - JWT_SECRET=${JWT_SECRET}
+      # OCR Configuration
+      - OCR_MODE=${OCR_MODE:-local}
+      - TYPHOON_API_KEY=${TYPHOON_API_KEY}
+      - TYPHOON_API_URL=${TYPHOON_API_URL}
+      - TYPHOON_MODEL=${TYPHOON_MODEL}
+      # Local Ollama (Optional)
+      - OLLAMA_URL=${OLLAMA_URL}
+      - OLLAMA_MODEL=${OLLAMA_MODEL}
     volumes:
       - ./uploads:/app/uploads
       - ./markdown:/app/markdown
