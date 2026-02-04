@@ -113,11 +113,11 @@ const worker = new Worker(
 );
 
 worker.on('completed', (job) => {
-    console.log(`[Job ${job.id}] Completed successfully`);
+    console.log(`[Job ${job?.id}] Completed successfully`);
 });
 
 worker.on('failed', (job, err) => {
-    console.error(`[Job ${job.id}] Failed with error ${err.message}`);
+    console.error(`[Job ${job?.id}] Failed with error ${err.message}`);
 });
 
 console.log('👷 OCR Worker is ready and listening for jobs...');

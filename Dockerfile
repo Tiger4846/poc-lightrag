@@ -98,11 +98,12 @@ RUN mkdir -p /app/uploads /app/markdown /app/temp && chown -R nextjs:nodejs /app
 # --- OCR Service Setup ---
 COPY --chown=nextjs:nodejs ocr-service ./ocr-service
 
-# Setup Python Environment
+# Setup Python Environment (stay as root to create venv, then switch to nextjs)
+RUN python3 -m venv /app/venv && chown -R nextjs:nodejs /app/venv
+
 USER nextjs
 ENV PATH="/app/venv/bin:$PATH"
-RUN python3 -m venv /app/venv && \
-  pip install --no-cache-dir -r ocr-service/requirements.txt
+RUN pip install --no-cache-dir -r ocr-service/requirements.txt
 
 # Copy start script
 COPY --chown=nextjs:nodejs start.sh ./start.sh
