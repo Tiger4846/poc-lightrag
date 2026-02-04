@@ -408,7 +408,7 @@ export default function OcrPage() {
                                     {/* Stats */}
                                     <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-center px-4 mt-6">
                                         {/* Total Files */}
-                                        <div className="bg-gray-300/20 text-start rounded-lg p-3 border border-gray-200 h-full">
+                                        <div className="bg-gray-300/20 text-start rounded-lg p-3 border border-gray-300 h-full">
                                             <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
                                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -419,7 +419,7 @@ export default function OcrPage() {
                                         </div>
 
                                         {/* Success */}
-                                        <div className="bg-green-500/20 text-start rounded-lg p-3 border border-gray-200 h-full">
+                                        <div className="bg-green-500/20 text-start rounded-lg p-3 border border-green-500 h-full">
                                             <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                                                 <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -430,9 +430,9 @@ export default function OcrPage() {
                                         </div>
 
                                         {/* Processing */}
-                                        <div className="bg-blue-500/20 text-start rounded-lg p-3 border border-gray-200 h-full">
+                                        <div className="bg-blue-500/20 text-start rounded-lg p-3 border border-blue-500 h-full">
                                             <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                                                <svg className="w-5 h-5 text-white animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                                 </svg>
                                             </div>
@@ -441,7 +441,7 @@ export default function OcrPage() {
                                         </div>
 
                                         {/* Waiting/Unprocessed */}
-                                        <div className="bg-yellow-500/20 text-start rounded-lg p-3 border border-gray-200 h-full">
+                                        <div className="bg-yellow-500/20 text-start rounded-lg p-3 border border-yellow-500 h-full">
                                             <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
                                                 <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
@@ -452,7 +452,7 @@ export default function OcrPage() {
                                         </div>
 
                                         {/* Failed */}
-                                        <div className="bg-red-500/20 text-start rounded-lg p-3 border border-gray-200 h-full">
+                                        <div className="bg-red-500/20 text-start rounded-lg p-3 border border-red-500 h-full">
                                             <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
                                                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
