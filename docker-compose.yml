@@ -1,4 +1,50 @@
 services:
+  db:
+    image: postgres:16-alpine
+    container_name: swu_postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-swu_directory}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-swu_directory}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:alpine
+    container_name: swu_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: swu_ollama
+    restart: always
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
   app:
     container_name: swu_app
     build:
@@ -7,8 +53,31 @@ services:
     restart: always
     ports:
       - "3000:3000"
+      - "8001:8001"
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-swu_directory}
+      - REDIS_URL=redis://redis:6379
       - JWT_SECRET=${JWT_SECRET}
+      # OCR Configuration
+      - OCR_MODE=${OCR_MODE:-local}
+      - TYPHOON_API_KEY=${TYPHOON_API_KEY}
+      - TYPHOON_API_URL=${TYPHOON_API_URL}
+      - TYPHOON_MODEL=${TYPHOON_MODEL}
+      # Local Ollama
+      - OLLAMA_URL=http://ollama:11434
+      - OLLAMA_MODEL=${OLLAMA_MODEL}
     volumes:
       - ./uploads:/app/uploads
+      - ./markdown:/app/markdown
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:
+  ollama_data:

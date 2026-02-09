@@ -1,7 +1,10 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
-  provider = "prisma-client"
-  output   = "../app/generated/prisma"
-  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+  provider      = "prisma-client-js"
+  output        = "../app/generated/prisma"
+  binaryTargets = ["native", "linux-arm64-openssl-3.0.x"]
 }
 
 datasource db {
@@ -13,33 +16,34 @@ enum dir_role {
   USER
   ADMIN
 }
-
 model dir_User {
-  id             String     @id @default(cuid())
-  email          String     @unique
-  name           String?
-  password       String
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
-  role          dir_role     @default(USER)
-  files          FileNode[]
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  role      dir_role @default(USER)
+  files     FileNode[]
 }
 
 model FileNode {
-  id   String @id @default(uuid())
-  name String 
-  type String 
-  parentId String?
-  size       Int? 
-  storageKey String? 
-  createdAt  DateTime @default(now())
-  user       dir_User?    @relation(fields: [userId], references: [id])
-  userId     String?
+  id              String    @id @default(uuid())
+  name            String
+  type            String
+  parentId        String?
+  size            Int?
+  storageKey      String?
+  createdAt       DateTime  @default(now())
+  userId          String?
+  ocrStatus       String    @default("UNPROCESSED")
+  markdownPath    String?
+
   recommendStatus Boolean   @default(false)
   deleteStatus    Boolean   @default(false)
   deletedAt       DateTime?
 
-  parent   FileNode?  @relation("FolderHierarchy", fields: [parentId], references: [id])
-  children FileNode[] @relation("FolderHierarchy")
-
+  parent   FileNode?  @relation("FileHierarchy", fields: [parentId], references: [id])
+  children FileNode[] @relation("FileHierarchy")
+  user     dir_User?  @relation(fields: [userId], references: [id])
 }

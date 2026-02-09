@@ -1,0 +1,20 @@
+Dockerfile
+.dockerignore
+node_modules
+npm-debug.log
+README.md
+.next
+.git
+.env*
+! .env.production.example
+prisma/migrations
+.vscode
+.idea
+ocr-service/venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+markdown/
+uploads/
