@@ -16,7 +16,8 @@ async function saveOcrResultAsMd(fileId: string, fileName: string, ocrText: stri
         await mkdir(markdownDir, { recursive: true });
     }
 
-    const mdFileName = `${fileId}.md`;
+    const safeName = path.parse(fileName).name.replace(/[^a-z0-9\u0E00-\u0E7F]/gi, '_');
+    const mdFileName = `${safeName}-${fileId}.md`;
     const mdFilePath = path.join(markdownDir, mdFileName);
     const relativePath = `markdown/${mdFileName}`;
 
@@ -270,6 +271,84 @@ export async function GET(
         console.error("Get OCR error:", error);
         return NextResponse.json(
             { message: "Error getting OCR result" },
+            { status: 500 }
+        );
+    }
+}
+
+// Update OCR result for a single file
+export async function PUT(
+    req: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const userId = getUserIdFromRequest(req);
+        if (!userId) {
+            return NextResponse.json(
+                { message: "Unauthorized" },
+                { status: 401 }
+            );
+        }
+
+        const { id } = await params;
+        const body = await req.json();
+        const { content } = body;
+
+        if (typeof content !== 'string') {
+            return NextResponse.json(
+                { message: "Content must be a string" },
+                { status: 400 }
+            );
+        }
+
+        // Get the file
+        const file = await prisma.fileNode.findUnique({
+            where: { id },
+        });
+
+        if (!file) {
+            return NextResponse.json(
+                { message: "File not found" },
+                { status: 404 }
+            );
+        }
+
+        if (file.ocrStatus !== 'SUCCESS') {
+            return NextResponse.json(
+                { message: "OCR not yet performed for this file" },
+                { status: 404 }
+            );
+        }
+
+        // Determine markdown path
+        let markdownPath = file.markdownPath;
+
+        if (!markdownPath) {
+            return NextResponse.json(
+                { message: "Markdown path not found for this file" },
+                { status: 404 }
+            );
+        }
+
+        const mdFilePath = path.join(process.cwd(), markdownPath);
+
+        // Ensure directory exists
+        if (!fs.existsSync(path.dirname(mdFilePath))) {
+            await mkdir(path.dirname(mdFilePath), { recursive: true });
+        }
+
+        // Write content to file
+        await writeFile(mdFilePath, content, 'utf-8');
+
+        return NextResponse.json({
+            message: "OCR result updated successfully",
+            fileId: file.id,
+        }, { status: 200 });
+
+    } catch (error: any) {
+        console.error("Update OCR error:", error);
+        return NextResponse.json(
+            { message: "Error updating OCR result", error: error.message },
             { status: 500 }
         );
     }

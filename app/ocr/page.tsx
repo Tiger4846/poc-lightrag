@@ -199,6 +199,98 @@ export default function OcrPage() {
         }
     };
 
+    // Upload to LightRAG Handler
+    const handleUploadToLightRag = async (file: FileItem) => {
+        if (!file.id) return;
+
+        try {
+            Swal.fire({
+                title: 'กำลังอัปโหลดไป LightRAG...',
+                html: `ไฟล์: ${file.name}`,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            await fileService.uploadToLightRag(file.id);
+            await refreshFiles(); // Refresh to update status
+
+            Swal.fire({
+                icon: 'success',
+                title: 'อัปโหลดสำเร็จ!',
+                text: 'ไฟล์ถูกส่งไปที่ LightRAG แล้ว',
+                confirmButtonColor: '#A61919',
+                timer: 2000
+            });
+
+        } catch (error: any) {
+            console.error('LightRAG upload error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด',
+                text: error?.response?.data?.message || 'ไม่สามารถอัปโหลดได้',
+            });
+        }
+    };
+
+    // Delete from LightRAG Handler
+    const handleDeleteFromLightRag = async (file: FileItem) => {
+        if (!file.id) return;
+
+        const result = await Swal.fire({
+            title: 'ยืนยันการลบจาก LightRAG?',
+            text: `คุณต้องการลบไฟล์ "${file.name}" ออกจากระบบ LightRAG ใช่หรือไม่?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'ใช่, ลบเลย',
+            cancelButtonText: 'ยกเลิก'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                Swal.fire({
+                    title: 'กำลังลบจาก LightRAG...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                await fileService.deleteFromLightRag(file.id);
+                await refreshFiles(); // Refresh to update status
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'ลบสำเร็จ!',
+                    text: 'ไฟล์ถูกลบออกจาก LightRAG แล้ว',
+                    confirmButtonColor: '#A61919',
+                    timer: 2000
+                });
+
+            } catch (error: any) {
+                console.error('LightRAG delete error:', error);
+
+                // Check for 503 Busy or 409
+                if (error?.response?.status === 503 || error?.response?.status === 409) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'ระบบไม่ว่าง',
+                        text: error?.response?.data?.message || 'LightRAG กำลังประมวลผลอยู่ ไม่สามารถลบได้ในขณะนี้',
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: error?.response?.data?.message || 'ไม่สามารถลบได้',
+                    });
+                }
+            }
+        }
+    };
+
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleUploadAndOcr = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -533,19 +625,28 @@ export default function OcrPage() {
                                                     }}
                                                     onMoveToTrash={() => toggleDeleteStatus(file)}
                                                     onToggleRecommend={() => toggleRecommendStatus(file)}
+                                                    onUploadToLightRag={() => handleUploadToLightRag(file)}
+                                                    onDeleteFromLightRag={() => handleDeleteFromLightRag(file)}
                                                 />
                                                 {/* OCR Status Badge */}
                                                 <div className="absolute bottom-2 left-2 z-10">
-                                                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium shadow-sm ${file.ocr_status === 'SUCCESS' ? 'bg-green-100 text-green-800 border border-green-200' :
-                                                        file.ocr_status === 'PENDING' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
-                                                            file.ocr_status === 'FAILED' ? 'bg-red-100 text-red-800 border border-red-200' :
-                                                                'bg-yellow-100 text-yellow-800 border border-yellow-200'
-                                                        }`}>
-                                                        {file.ocr_status === 'SUCCESS' ? '✓ OCR' :
-                                                            file.ocr_status === 'PENDING' ? '⟳ กำลังทำ' :
-                                                                file.ocr_status === 'FAILED' ? '✗ ล้มเหลว' :
-                                                                    'รอดำเนินการ'}
-                                                    </span>
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium shadow-sm ${file.ocr_status === 'SUCCESS' ? 'bg-green-100 text-green-800 border border-green-200' :
+                                                            file.ocr_status === 'PENDING' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
+                                                                file.ocr_status === 'FAILED' ? 'bg-red-100 text-red-800 border border-red-200' :
+                                                                    'bg-yellow-100 text-yellow-800 border border-yellow-200'
+                                                            }`}>
+                                                            {file.ocr_status === 'SUCCESS' ? '✓ OCR' :
+                                                                file.ocr_status === 'PENDING' ? '⟳ กำลังทำ' :
+                                                                    file.ocr_status === 'FAILED' ? '✗ ล้มเหลว' :
+                                                                        'รอดำเนินการ'}
+                                                        </span>
+                                                        {file.lightrag_status === 'UPLOADED' && (
+                                                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium shadow-sm bg-purple-100 text-purple-800 border border-purple-200">
+                                                                ⚡ LightRAG
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </div>
                                                 {/* OCR Button */}
                                                 {(file.ocr_status === 'UNPROCESSED' || file.ocr_status === 'FAILED') && (
@@ -630,38 +731,69 @@ export default function OcrPage() {
                                                             </span>
                                                         </td>
                                                         <td className="px-6 py-4 text-center">
-                                                            {file.ocr_status === 'SUCCESS' ? (
-                                                                <button
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        setOcrResultFile(file);
-                                                                    }}
-                                                                    className="px-4 py-1.5 bg-green-500 text-white text-sm rounded-lg font-medium hover:bg-green-600 transition-all duration-200 inline-flex items-center gap-1"
-                                                                >
-                                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                                    </svg>
-                                                                    ดูผลลัพธ์
-                                                                </button>
-                                                            ) : (
-                                                                <button
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        if (file.ocr_status !== 'PENDING') handleOcrSingleFile(file);
-                                                                    }}
-                                                                    disabled={file.ocr_status === 'PENDING'}
-                                                                    className={`px-4 py-1.5 text-white text-sm rounded-lg font-medium transition-all duration-200 inline-flex items-center gap-1 ${file.ocr_status === 'PENDING'
-                                                                        ? 'bg-gray-400 cursor-not-allowed'
-                                                                        : 'bg-gradient-to-r from-[#A61919] to-[#FF7B7B] hover:shadow-lg hover:scale-105'
-                                                                        }`}
-                                                                >
-                                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                                                    </svg>
-                                                                    {file.ocr_status === 'FAILED' ? 'ลองใหม่' : 'OCR'}
-                                                                </button>
-                                                            )}
+                                                            <div className="flex items-center justify-center gap-2">
+                                                                <div className="flex flex-col gap-1 items-center">
+                                                                    {file.lightrag_status === 'UPLOADED' ? (
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                handleDeleteFromLightRag(file);
+                                                                            }}
+                                                                            className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                                                                            title="Delete from LightRAG"
+                                                                        >
+                                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                            </svg>
+                                                                        </button>
+                                                                    ) : (
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                handleUploadToLightRag(file);
+                                                                            }}
+                                                                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                                                            title="Upload to LightRAG"
+                                                                        >
+                                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                                                            </svg>
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                                {file.ocr_status === 'SUCCESS' ? (
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setOcrResultFile(file);
+                                                                        }}
+                                                                        className="px-4 py-1.5 bg-green-500 text-white text-sm rounded-lg font-medium hover:bg-green-600 transition-all duration-200 inline-flex items-center gap-1"
+                                                                    >
+                                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                                        </svg>
+                                                                        ดูผลลัพธ์
+                                                                    </button>
+                                                                ) : (
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            if (file.ocr_status !== 'PENDING') handleOcrSingleFile(file);
+                                                                        }}
+                                                                        disabled={file.ocr_status === 'PENDING'}
+                                                                        className={`px-4 py-1.5 text-white text-sm rounded-lg font-medium transition-all duration-200 inline-flex items-center gap-1 ${file.ocr_status === 'PENDING'
+                                                                            ? 'bg-gray-400 cursor-not-allowed'
+                                                                            : 'bg-gradient-to-r from-[#A61919] to-[#FF7B7B] hover:shadow-lg hover:scale-105'
+                                                                            }`}
+                                                                    >
+                                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                                                        </svg>
+                                                                        {file.ocr_status === 'FAILED' ? 'ลองใหม่' : 'OCR'}
+                                                                    </button>
+                                                                )}
+                                                            </div>
                                                         </td>
                                                     </tr>
                                                 ))}

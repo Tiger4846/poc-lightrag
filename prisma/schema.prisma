@@ -43,6 +43,9 @@ model FileNode {
   deleteStatus    Boolean   @default(false)
   deletedAt       DateTime?
 
+  lightragStatus  String    @default("NONE") // NONE, UPLOADED
+  lightragDocId   String?
+
   parent   FileNode?  @relation("FileHierarchy", fields: [parentId], references: [id])
   children FileNode[] @relation("FileHierarchy")
   user     dir_User?  @relation(fields: [userId], references: [id])

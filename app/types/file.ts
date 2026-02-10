@@ -11,4 +11,5 @@ export type FileItem = {
   ocr_status: 'SUCCESS' | 'PENDING' | 'FAILED' | 'UNPROCESSED' | 'PROCESSING';
   deleted_at: Date | null;
   createdAt: Date;
+  lightrag_status?: 'NONE' | 'UPLOADED';
 };

@@ -49,5 +49,6 @@ next-env.d.ts
 ocr-service/venv/
 
 # Markdown generated files
-/markdown
+markdown
 
+.venv

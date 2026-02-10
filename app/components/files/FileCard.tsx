@@ -3,19 +3,6 @@
 import React, { useRef } from "react";
 import { FileItem } from "@/app/types/file";
 
-interface FileCardProps {
-  file: FileItem;
-  isMenuOpen: boolean;
-  onToggleMenu: (e: React.MouseEvent) => void;
-  onNavigate: () => void;
-  onMoveToTrash: () => void;
-  onToggleRecommend: () => void;
-  onCloseMenu: () => void;
-  isTrash?: boolean;
-  onRestore?: () => void;
-  onDeletePermanently?: () => void;
-}
-
 import FileActionMenu from "./FileActionMenu";
 
 interface FileCardProps {
@@ -29,6 +16,8 @@ interface FileCardProps {
   isTrash?: boolean;
   onRestore?: () => void;
   onDeletePermanently?: () => void;
+  onUploadToLightRag?: () => void;
+  onDeleteFromLightRag?: () => void;
 }
 
 export default function FileCard({
@@ -42,6 +31,8 @@ export default function FileCard({
   isTrash,
   onRestore,
   onDeletePermanently,
+  onUploadToLightRag,
+  onDeleteFromLightRag,
 }: FileCardProps) {
   const menuRef = useRef<HTMLButtonElement>(null);
 
@@ -67,6 +58,8 @@ export default function FileCard({
           isTrash={isTrash}
           onRestore={onRestore}
           onDeletePermanently={onDeletePermanently}
+          onUploadToLightRag={onUploadToLightRag}
+          onDeleteFromLightRag={onDeleteFromLightRag}
           triggerRef={menuRef as React.RefObject<HTMLElement>}
         />
       </div>

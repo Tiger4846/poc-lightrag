@@ -87,5 +87,23 @@ export const fileService = {
     getOcrResult: async (id: string) => {
         const response = await axios.get(`/api/files/${id}/ocr`, getAuthHeaders());
         return response.data;
+    },
+
+    // Upload to LightRAG
+    uploadToLightRag: async (id: string) => {
+        const response = await axios.post(`/api/files/${id}/lightrag`, {}, getAuthHeaders());
+        return response.data;
+    },
+
+    // Update OCR result for a file
+    updateOcrResult: async (id: string, content: string) => {
+        const response = await axios.put(`/api/files/${id}/ocr`, { content }, getAuthHeaders());
+        return response.data;
+    },
+
+    // Delete from LightRAG
+    deleteFromLightRag: async (id: string) => {
+        const response = await axios.post(`/api/files/${id}/lightrag/delete`, {}, getAuthHeaders());
+        return response.data;
     }
 };

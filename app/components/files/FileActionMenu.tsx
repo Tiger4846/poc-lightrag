@@ -13,6 +13,8 @@ interface FileActionMenuProps {
     isTrash?: boolean;
     onRestore?: () => void;
     onDeletePermanently?: () => void;
+    onUploadToLightRag?: () => void;
+    onDeleteFromLightRag?: () => void;
     triggerRef: React.RefObject<HTMLElement>;
 }
 
@@ -25,6 +27,8 @@ export default function FileActionMenu({
     isTrash,
     onRestore,
     onDeletePermanently,
+    onUploadToLightRag,
+    onDeleteFromLightRag,
     triggerRef,
 }: FileActionMenuProps) {
     const [position, setPosition] = useState<{ top: number; right: number } | null>(null);
@@ -169,6 +173,35 @@ export default function FileActionMenu({
                                         : "เพิ่มไฟล์ไปแนะนำ"}
                                 </span>
                             </button>
+                            {onUploadToLightRag && onDeleteFromLightRag && (
+                                file.lightrag_status === 'UPLOADED' ? (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onDeleteFromLightRag();
+                                        }}
+                                        className="w-full flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors text-left"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        <span className="text-sm">Delete from LightRAG</span>
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onUploadToLightRag();
+                                        }}
+                                        className="w-full flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors text-left"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                        </svg>
+                                        <span className="text-sm">Upload to LightRAG</span>
+                                    </button>
+                                )
+                            )}
                         </>
                     )}
                 </div>

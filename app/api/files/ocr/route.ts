@@ -16,7 +16,8 @@ async function saveOcrResultAsMd(fileId: string, fileName: string, ocrText: stri
         await mkdir(markdownDir, { recursive: true });
     }
 
-    const mdFileName = `${fileId}.md`;
+    const safeName = path.parse(fileName).name.replace(/[^a-z0-9\u0E00-\u0E7F]/gi, '_');
+    const mdFileName = `${safeName}-${fileId}.md`;
     const mdFilePath = path.join(markdownDir, mdFileName);
     const relativePath = `markdown/${mdFileName}`;
 

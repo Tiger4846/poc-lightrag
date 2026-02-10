@@ -13,6 +13,7 @@ interface FileNodeFromAPI {
   deleteStatus: boolean;
   ocrStatus: string; // changed from boolean
   deletedAt: string | null;
+  lightragStatus: 'NONE' | 'UPLOADED' | null;
   user?: {
     name: string | null;
     email: string;
@@ -53,6 +54,7 @@ function convertToFileItem(node: FileNodeFromAPI): FileItem & { id: string } {
     recommend_status: node.recommendStatus,
     delete_status: node.deleteStatus,
     ocr_status: (node.ocrStatus || 'UNPROCESSED') as 'SUCCESS' | 'PENDING' | 'FAILED' | 'UNPROCESSED' | 'PROCESSING',
+    lightrag_status: (node.lightragStatus || 'NONE') as 'NONE' | 'UPLOADED',
     deleted_at: node.deletedAt ? new Date(node.deletedAt) : null,
     createdAt: new Date(node.createdAt),
     children: [],

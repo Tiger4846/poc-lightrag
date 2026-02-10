@@ -6,16 +6,22 @@ import { fileService } from "@/lib/services/file.service";
 interface OcrResultModalProps {
     file: FileItem | null;
     onClose: () => void;
+    onUpdate?: () => void;
 }
 
-export default function OcrResultModal({ file, onClose }: OcrResultModalProps) {
+export default function OcrResultModal({ file, onClose, onUpdate }: OcrResultModalProps) {
     const [markdownContent, setMarkdownContent] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedContent, setEditedContent] = useState("");
+    const [saving, setSaving] = useState(false);
+    const [uploading, setUploading] = useState(false);
 
     useEffect(() => {
         setMarkdownContent(null);
         setError(null);
+        setIsEditing(false);
 
         if (file && file.id && file.ocr_status === 'SUCCESS') {
             setLoading(true);
@@ -28,7 +34,9 @@ export default function OcrResultModal({ file, onClose }: OcrResultModalProps) {
 
         try {
             const response = await fileService.getOcrResult(file.id);
-            setMarkdownContent(response.ocrContent || null);
+            const content = response.ocrContent || "";
+            setMarkdownContent(content);
+            setEditedContent(content);
         } catch (err: any) {
             console.error("Error loading OCR result:", err);
             setError("ไม่พบผลลัพธ์ OCR สำหรับไฟล์นี้");
@@ -36,6 +44,72 @@ export default function OcrResultModal({ file, onClose }: OcrResultModalProps) {
             setLoading(false);
         }
     };
+
+    const handleSave = async () => {
+        if (!file?.id) return;
+
+        try {
+            setSaving(true);
+            await fileService.updateOcrResult(file.id, editedContent);
+            setMarkdownContent(editedContent);
+            setIsEditing(false);
+            alert("บันทึกเรียบร้อย");
+        } catch (err: any) {
+            console.error("Error updating OCR result:", err);
+            alert("เกิดข้อผิดพลาดในการบันทึก: " + (err.message || "Unknown error"));
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleUploadToLightRag = async () => {
+        if (!file?.id) return;
+
+        // If editing, ask to save first or just warn
+        if (isEditing) {
+            if (!confirm("คุณกำลังแก้ไขอยู่ ต้องการบันทึกก่อน Upload หรือไม่? (Cancel เพื่อ Upload เนื้อหาล่าสุดที่บันทึกไว้)")) {
+                // Proceed with upload using currently SAVED markdownContent (not editedContent)
+            } else {
+                await handleSave();
+            }
+        }
+
+        try {
+            setUploading(true);
+            await fileService.uploadToLightRag(file.id);
+            alert("Upload to LightRAG successful!");
+            if (onUpdate) onUpdate();
+        } catch (err: any) {
+            console.error("Error uploading to LightRAG:", err);
+            alert("Failed to upload: " + (err.response?.data?.message || err.message));
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const handleDeleteFromLightRag = async () => {
+        if (!file?.id) return;
+
+        if (!confirm("คุณต้องการลบไฟล์นี้ออกจาก LightRAG ใช่หรือไม่?")) return;
+
+        try {
+            setUploading(true); // Reuse uploading state for loading indicator
+            await fileService.deleteFromLightRag(file.id);
+            alert("Delete from LightRAG successful!");
+            if (onUpdate) onUpdate();
+            onClose(); // Close modal after delete
+        } catch (err: any) {
+            console.error("Error deleting from LightRAG:", err);
+            if (err?.response?.status === 503 || err?.response?.status === 409) {
+                alert("ระบบไม่ว่าง: " + (err.response?.data?.message || err.message));
+            } else {
+                alert("Failed to delete: " + (err.response?.data?.message || err.message));
+            }
+        } finally {
+            setUploading(false);
+        }
+    };
+
 
     if (!file) return null;
 
@@ -86,20 +160,39 @@ export default function OcrResultModal({ file, onClose }: OcrResultModalProps) {
                             <p className="text-gray-500 mb-2">{error}</p>
                             <p className="text-sm text-gray-400">ลอง OCR ไฟล์นี้ก่อน</p>
                         </div>
-                    ) : markdownContent ? (
-                        <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-                            <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
+                    ) : markdownContent !== null ? (
+                        <div className="bg-white rounded-lg border border-gray-200 shadow-sm h-full flex flex-col">
+                            <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-lg flex justify-between items-center">
                                 <div className="flex items-center gap-2">
                                     <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
                                     </svg>
                                     <span className="text-sm font-medium text-gray-700">Markdown Content</span>
+                                    {isEditing && <span className="text-xs text-orange-500 font-bold ml-2">(Editing)</span>}
                                 </div>
+                                {!isEditing && (
+                                    <button
+                                        onClick={() => setIsEditing(true)}
+                                        className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                                    >
+                                        Edit
+                                    </button>
+                                )}
                             </div>
-                            <div className="p-6 max-h-[500px] overflow-auto">
-                                <pre className="whitespace-pre-wrap font-mono text-sm text-gray-800 leading-relaxed">
-                                    {markdownContent}
-                                </pre>
+                            <div className="p-0 flex-1 relative min-h-[400px]">
+                                {isEditing ? (
+                                    <textarea
+                                        className="w-full h-full p-6 font-mono text-sm text-gray-800 leading-relaxed focus:outline-none resize-none"
+                                        value={editedContent}
+                                        onChange={(e) => setEditedContent(e.target.value)}
+                                    />
+                                ) : (
+                                    <div className="p-6 h-full overflow-auto">
+                                        <pre className="whitespace-pre-wrap font-mono text-sm text-gray-800 leading-relaxed">
+                                            {markdownContent}
+                                        </pre>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ) : file.ocr_status !== 'SUCCESS' ? (
@@ -119,9 +212,9 @@ export default function OcrResultModal({ file, onClose }: OcrResultModalProps) {
                 <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-between items-center rounded-b-xl">
                     <div className="flex items-center gap-2">
                         <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${file.ocr_status === 'SUCCESS' ? 'bg-green-100 text-green-800' :
-                                file.ocr_status === 'PENDING' ? 'bg-blue-100 text-blue-800' :
-                                    file.ocr_status === 'FAILED' ? 'bg-red-100 text-red-800' :
-                                        'bg-yellow-100 text-yellow-800'
+                            file.ocr_status === 'PENDING' ? 'bg-blue-100 text-blue-800' :
+                                file.ocr_status === 'FAILED' ? 'bg-red-100 text-red-800' :
+                                    'bg-yellow-100 text-yellow-800'
                             }`}>
                             {file.ocr_status === 'SUCCESS' ? '✓ OCR เสร็จแล้ว' :
                                 file.ocr_status === 'PENDING' ? '⟳ กำลังทำ' :
@@ -130,20 +223,91 @@ export default function OcrResultModal({ file, onClose }: OcrResultModalProps) {
                         </span>
                     </div>
                     <div className="flex gap-3">
-                        {markdownContent && (
-                            <button
-                                onClick={() => {
-                                    navigator.clipboard.writeText(markdownContent);
-                                    alert('คัดลอกแล้ว!');
-                                }}
-                                className="px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                                </svg>
-                                คัดลอก
-                            </button>
+                        {markdownContent && !isEditing && (
+                            <>
+                                {file.lightrag_status === 'UPLOADED' ? (
+                                    <button
+                                        onClick={handleDeleteFromLightRag}
+                                        disabled={uploading}
+                                        className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+                                    >
+                                        {uploading ? (
+                                            <>
+                                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                Deleting...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                                Delete from LightRAG
+                                            </>
+                                        )}
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={handleUploadToLightRag}
+                                        disabled={uploading}
+                                        className="px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+                                    >
+                                        {uploading ? (
+                                            <>
+                                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                Uploading...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                                </svg>
+                                                Upload to LightRAG
+                                            </>
+                                        )}
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(markdownContent);
+                                        alert('คัดลอกแล้ว!');
+                                    }}
+                                    className="px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                                    </svg>
+                                    คัดลอก
+                                </button>
+                            </>
                         )}
+
+                        {isEditing && (
+                            <>
+                                <button
+                                    onClick={() => {
+                                        setIsEditing(false);
+                                        setEditedContent(markdownContent || "");
+                                    }}
+                                    className="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-300 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleSave}
+                                    disabled={saving}
+                                    className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+                                >
+                                    {saving ? 'Saving...' : 'Save'}
+                                </button>
+                            </>
+                        )}
+
                         <button
                             onClick={onClose}
                             className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors"

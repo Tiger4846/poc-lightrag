@@ -10,7 +10,7 @@ import { PrismaClient } from './app/generated/prisma';
 const prisma = new PrismaClient();
 
 const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
-const OCR_SERVICE_URL = 'http://127.0.0.1:8001/ocr'; // Localhost since in same container/net
+const OCR_SERVICE_URL = (process.env.OCR_SERVICE_URL?.replace(/\/+$/, '') || 'http://127.0.0.1:8001') + '/ocr';
 
 console.log('🚀 Worker started, connecting to Redis at', redisUrl);
 
@@ -81,7 +81,8 @@ const worker = new Worker(
                 fs.mkdirSync(markdownDir, { recursive: true });
             }
 
-            const markdownFileName = `${fileId}.md`;
+            const safeName = path.parse(fileName).name.replace(/[^a-z0-9\u0E00-\u0E7F]/gi, '_');
+            const markdownFileName = `${safeName}.md`;
             const markdownPath = path.join(markdownDir, markdownFileName);
 
             fs.writeFileSync(markdownPath, markdown);
