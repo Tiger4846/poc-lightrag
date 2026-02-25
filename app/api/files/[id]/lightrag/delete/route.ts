@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma/prisma";
 import { getUserIdFromRequest } from "@/lib/auth/jwt";
-import axios from "axios";
+import api from "@/lib/axios";
 
 // Hardcoded based on request and existing LightRAG config
 const LIGHTRAG_API_BASE = process.env.LIGHTRAG_API_URL || "http://localhost:9621";
@@ -64,7 +64,7 @@ export async function POST(
                 // Let's try to fetch recent documents and find a match.
                 // Note: This might be inefficient if there are many documents.
 
-                const searchResponse = await axios.post(LIGHTRAG_PAGINATED_URL, {
+                const searchResponse = await api.post(LIGHTRAG_PAGINATED_URL, {
                     page: 1,
                     page_size: 100, // Fetch top 100
                     sort_direction: "desc",
@@ -108,7 +108,7 @@ export async function POST(
 
         // Prepare delete request
         try {
-            const deleteResponse = await axios.delete(LIGHTRAG_DELETE_URL, {
+            const deleteResponse = await api.delete(LIGHTRAG_DELETE_URL, {
                 data: {
                     doc_ids: [docId],
                     delete_file: true,

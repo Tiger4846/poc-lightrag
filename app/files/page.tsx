@@ -39,7 +39,15 @@ export default function FilesPage() {
   // โหลดข้อมูลจาก API เมื่อเริ่มต้น
   useEffect(() => {
     const loadData = async () => {
+      const token = localStorage.getItem("directoryToken");
+
+      if (!token) {
+        router.replace("/login");
+        return;
+      }
+
       setLoading(true);
+
       Swal.fire({
         title: 'กำลังโหลด...',
         allowOutsideClick: false,
@@ -52,14 +60,14 @@ export default function FilesPage() {
         await refreshFiles();
         Swal.close();
       } catch (error) {
-        // Error already handled in context
+        Swal.close();
       } finally {
         setLoading(false);
       }
     };
 
     loadData();
-  }, []);
+  }, [router]);
 
   // Sync URL parameter กับ navigation state
   useEffect(() => {

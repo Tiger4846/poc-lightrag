@@ -34,7 +34,9 @@ export default function PageHeader({ name, onMenuClick, searchTerm, onSearch }: 
     }).then((result) => {
       if (result.isConfirmed) {
         // Clear all localStorage
-        localStorage.clear();
+        localStorage.removeItem("directoryToken");
+        localStorage.removeItem("userId");
+        localStorage.removeItem("userName");
 
         // Redirect to login
         router.push("/login");

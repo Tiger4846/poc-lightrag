@@ -3,8 +3,8 @@
 import Link from "next/link";
 import AuthLayout from "../components/auth/AuthLayout";
 import { useState } from 'react';
-import axios from "axios";
 import Swal from 'sweetalert2';
+import api from "@/lib/axios";
 
 
 export default function SignupPage() {
@@ -42,7 +42,7 @@ export default function SignupPage() {
       return;
     }
     
-    const duplicateCheck = await axios.get(`/api/users/register?email=${formData.email}`);
+    const duplicateCheck = await api.get(`/api/users/register?email=${formData.email}`);
     if (duplicateCheck.data !== null) {
       Swal.fire({
         icon: 'warning',
@@ -55,7 +55,7 @@ export default function SignupPage() {
     }
 
     try {
-      const response = await axios.post('/api/users/register', {
+      const response = await api.post('/api/users/register', {
         name: formData.fullName,
         email: formData.email,
         password: formData.password

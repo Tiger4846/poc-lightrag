@@ -2,9 +2,9 @@ import { Worker } from 'bullmq';
 import Redis from 'ioredis';
 import fs from 'fs';
 import path from 'path';
-import axios from 'axios';
 import FormData from 'form-data';
 import { PrismaClient } from './app/generated/prisma';
+import api from './lib/axios';
 
 // Initialize Prisma
 const prisma = new PrismaClient();
@@ -24,7 +24,7 @@ async function ensureOCRServiceReady(retries = 10, delayMs = 3000): Promise<bool
 
     for (let i = 0; i < retries; i++) {
         try {
-            await axios.get(healthUrl, { timeout: 2000 });
+            await api.get(healthUrl, { timeout: 2000 });
             return true;
         } catch (err: any) {
             console.log(`[OCR Check] Service not ready yet (Attempt ${i + 1}/${retries}). Waiting...`);
@@ -58,7 +58,7 @@ const worker = new Worker(
             form.append('file', fs.createReadStream(filePath), fileName);
 
             console.log(`[Job ${job.id}] 📤 Sending to OCR Service: ${OCR_SERVICE_URL}`);
-            const response = await axios.post(OCR_SERVICE_URL, form, {
+            const response = await api.post(OCR_SERVICE_URL, form, {
                 headers: {
                     ...form.getHeaders(),
                 },

@@ -3,8 +3,8 @@ import { prisma } from "@/lib/prisma/prisma";
 import { getUserIdFromRequest } from "@/lib/auth/jwt";
 import path from "path";
 import fs from "fs";
-import axios from "axios";
 import FormData from "form-data";
+import api from "@/lib/axios";
 
 const LIGHTRAG_API_KEY = process.env.LIGHTRAG_API_KEY;
 // Hardcoded based on request
@@ -89,7 +89,7 @@ export async function POST(
         form.append('file', fs.createReadStream(filePath), uploadFileName);
 
         try {
-            const response = await axios.post(LIGHTRAG_UPLOAD_URL, form, {
+            const response = await api.post(LIGHTRAG_UPLOAD_URL, form, {
                 headers: {
                     ...form.getHeaders(),
                     'X-API-Key': LIGHTRAG_API_KEY,

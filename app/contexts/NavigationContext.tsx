@@ -26,14 +26,14 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   // ฟังก์ชันดึงข้อมูลไฟล์จาก API
   const refreshFiles = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('directoryToken');
       if (!token) {
         Swal.fire({
           icon: 'error',
           title: 'กรุณาเข้าสู่ระบบ',
           text: 'คุณต้องเข้าสู่ระบบก่อนเข้าถึงหน้านี้',
         });
-        window.location.href = '/login';
+        window.location.href = '/directory/login';
         return;
       }
 

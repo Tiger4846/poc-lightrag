@@ -105,7 +105,7 @@ export default function TrashPage() {
             <div className="flex flex-col items-center justify-center min-h-[400px] md:h-[calc(100vh-200px)]">
               <div className="w-full max-w-[280px] md:max-w-[400px] h-auto mb-6 md:mb-8">
                 <Image
-                  src="/throw_away.svg"
+                  src="/directory/throw_away.svg"
                   alt="Empty Trash"
                   width={400}
                   height={300}

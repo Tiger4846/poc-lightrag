@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent } from "react";
+import { FormEvent, useEffect } from "react";
 import Swal from 'sweetalert2';
 import AuthLayout from "../components/auth/AuthLayout";
 import { useState } from "react";
-import axios from "axios";
+import api from "@/lib/axios";
 export default function LoginPage() {
   const router = useRouter();
 
@@ -17,7 +17,7 @@ export default function LoginPage() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await axios.post('/api/users/login', {
+      const response = await api.post('/api/users/login', {
         email: userdata.email,
         password: userdata.password
       });
@@ -25,7 +25,7 @@ export default function LoginPage() {
       if (response.status === 200 || response.data.status === 200) {
         // เก็บ token และ userId ใน localStorage
         if (response.data.token) {
-          localStorage.setItem('token', response.data.token);
+          localStorage.setItem('directoryToken', response.data.token);
           localStorage.setItem('userId', response.data.userId);
           localStorage.setItem('userName', response.data.name);
         }
@@ -68,6 +68,14 @@ export default function LoginPage() {
       </Link>
     </>
   );
+
+  useEffect(() => {
+    const token = localStorage.getItem("directoryToken");
+
+    if (token) {
+      router.replace("/files");
+    }
+  }, [router]);
 
   return (
     <AuthLayout
