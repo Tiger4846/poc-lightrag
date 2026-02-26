@@ -22,7 +22,7 @@ export default function PublicFileViewPage() {
 
         const fetchInfo = async () => {
             try {
-                const response = await fetch(`/api/files/public/${id}/info`);
+                const response = await fetch(`/directory/api/files/public/${id}/info`);
                 if (!response.ok) throw new Error("File not found");
                 const data = await response.json();
                 setFileInfo(data);
