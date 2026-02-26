@@ -11,7 +11,7 @@ export default function PublicFileViewPage() {
     const [error, setError] = useState<string | null>(null);
     const [textContent, setTextContent] = useState<string | null>(null);
 
-    const viewUrl = `/api/files/view/${id}`;
+    const viewUrl = `/directory/api/files/view/${id}`;
 
     useEffect(() => {
         if (!id) return;
