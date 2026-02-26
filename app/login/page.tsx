@@ -69,13 +69,13 @@ export default function LoginPage() {
     </>
   );
 
-  // useEffect(() => {
-  //   const token = localStorage.getItem("directoryToken");
+  useEffect(() => {
+    const token = localStorage.getItem("directoryToken");
 
-  //   if (token) {
-  //     router.replace("/files");
-  //   }
-  // }, [router]);
+    if (token) {
+      router.replace("/files");
+    }
+  }, [router]);
 
   return (
     <AuthLayout
