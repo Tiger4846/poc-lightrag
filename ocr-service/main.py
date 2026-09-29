@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 import os
 from pathlib import Path
 
-# Load .env from parent directory (swu-directory/.env)
+# Load .env from parent directory (lightrag-directory/.env)
 env_path = Path(__file__).parent.parent / '.env'
 load_dotenv(env_path)
 print(f"📂 Loading .env from: {env_path}")

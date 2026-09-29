@@ -61,7 +61,7 @@ export default function FileListItem({
       </td>
       <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 bg-orange-400 rounded-full flex items-center justify-center">
+          <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center">
             <span className="text-white text-xs font-semibold">{file.owner.charAt(0)}</span>
           </div>
           <span className="text-sm text-gray-900">{file.owner}</span>
@@ -75,9 +75,9 @@ export default function FileListItem({
           <button
             ref={menuRef}
             onClick={onToggleMenu}
-            className="w-8 h-8 hover:bg-red-100 rounded flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+            className="w-8 h-8 hover:bg-gray-200 rounded flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
           >
-            <span className="text-gray-600 hover:text-red-600">⋯</span>
+            <span className="text-gray-600 hover:text-gray-900">⋯</span>
           </button>
           <FileActionMenu
             file={file}

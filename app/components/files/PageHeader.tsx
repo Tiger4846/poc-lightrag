@@ -34,7 +34,7 @@ export default function PageHeader({ name, onMenuClick, searchTerm, onSearch }: 
     }).then((result) => {
       if (result.isConfirmed) {
         // Clear all localStorage
-        localStorage.removeItem("directoryToken");
+        localStorage.removeItem("lightragDirectoryToken");
         localStorage.removeItem("userId");
         localStorage.removeItem("userName");
 
@@ -85,7 +85,7 @@ export default function PageHeader({ name, onMenuClick, searchTerm, onSearch }: 
           onClick={() => setShowDropdown(!showDropdown)}
           className="flex items-center gap-2 hover:bg-gray-100 p-2 rounded-full transition-colors outline-none"
         >
-          <div className="w-8 h-8 bg-orange-400 rounded-full flex items-center justify-center">
+          <div className="w-8 h-8 bg-gray-500 rounded-full flex items-center justify-center">
             <span className="text-white text-xs font-semibold">{name.charAt(0)}</span>
           </div>
           <div className="text-sm text-left hidden md:block">
@@ -115,7 +115,7 @@ export default function PageHeader({ name, onMenuClick, searchTerm, onSearch }: 
             <div className="border-t border-gray-100 my-1"></div>
             <button
               onClick={handleLogout}
-              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+              className="w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-100 flex items-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

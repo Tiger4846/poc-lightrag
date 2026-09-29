@@ -1,3 +1,7 @@
+# Light Rag Directory
+
+ระบบจัดการเอกสารและไฟล์ พร้อม OCR และการเชื่อมต่อกับ LightRAG
+
 1. npm i 
 
 2. docker-compose up -d ผมใช้ PostgreSQL ผ่าน Docker ครับ
@@ -9,5 +13,7 @@
 5. npx prisma db push
 
 6. npm run dev
+
+เปิดเว็บที่ `http://localhost:3000/lightrag-directory`
 
 7. ใช้คำสั่ง npm run studio เพื่อสามารถดูฐานข้อมูลผ่าน Prisma Studio ได้ครับ

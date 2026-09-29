@@ -1,25 +1,27 @@
+name: lightrag-directory
+
 services:
   db:
     image: postgres:16-alpine
-    container_name: swu_postgres
+    container_name: lightrag_postgres
     restart: always
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
-      - POSTGRES_DB=${POSTGRES_DB:-swu_directory}
+      - POSTGRES_DB=${POSTGRES_DB:-lightrag}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-swu_directory}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-lightrag}"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   redis:
     image: redis:alpine
-    container_name: swu_redis
+    container_name: lightrag_redis
     restart: always
     ports:
       - "6379:6379"
@@ -33,7 +35,7 @@ services:
 
   ollama:
     image: ollama/ollama:latest
-    container_name: swu_ollama
+    container_name: lightrag_ollama
     restart: always
     ports:
       - "11434:11434"
@@ -46,7 +48,7 @@ services:
       retries: 3
 
   app:
-    container_name: swu_app_directory
+    container_name: lightrag_directory_app
     build:
       context: .
       dockerfile: Dockerfile
@@ -55,7 +57,7 @@ services:
       - "3000:3000"
       - "8001:8001"
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-swu_directory}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-lightrag}
       - REDIS_URL=redis://redis:6379
       - JWT_SECRET=${JWT_SECRET}
       # OCR Configuration

@@ -49,8 +49,8 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 flex-shrink-0">
               <Image
-                src="/swu_logo.png"
-                alt="SWU Logo"
+                src="/lightrag-directory/project-logo.svg"
+                alt="Light Rag logo"
                 width={48}
                 height={48}
                 className="w-full h-full object-contain"
@@ -58,9 +58,9 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
             </div>
             <div className="text-xs md:text-sm">
               <div>
-                <span className="font-semibold text-gray-600 hidden sm:inline">มหาวิทยาลัยศรีนครินทรวิโรฒ</span>
-                <span className="font-semibold text-gray-600 sm:hidden">มศว</span>
-                <span className="whitespace-nowrap text-[10px] font-semibold text-gray-600 hidden md:inline"> SRINAKHARINWIROT UNIVERSITY</span>
+                <span className="font-semibold text-gray-600 hidden sm:inline">Light Rag</span>
+                <span className="font-semibold text-gray-600 sm:hidden">Light Rag</span>
+                <span className="whitespace-nowrap text-[10px] font-semibold text-gray-600 hidden md:inline"> DOCUMENT PLATFORM</span>
               </div>
             </div>
           </div>
@@ -69,7 +69,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
         <div className="relative mb-6">
           <button
             onClick={() => setShowModal(true)}
-            className="w-full bg-gradient-to-r from-[#A61919] to-[#FF7B7B] hover:bg-red-700 hover:shadow-lg hover:scale-105 text-white rounded-full py-2.5 px-3 md:px-4 flex items-center justify-center gap-2 text-sm md:text-md font-semibold transition-all duration-200"
+            className="w-full bg-gradient-to-r from-gray-900 to-gray-600 hover:bg-black hover:shadow-lg hover:scale-105 text-white rounded-full py-2.5 px-3 md:px-4 flex items-center justify-center gap-2 text-sm md:text-md font-semibold transition-all duration-200"
           >
             <span className="text-lg">+</span>
             <span className="hidden sm:inline">สร้างใหม่</span>
@@ -82,7 +82,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
               <div className="absolute left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                 <div className="p-2">
                   <button
-                    className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors "
+                    className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors "
                     onClick={() => {
                       setShowModal(false);
                       setShowCreateFolderModal(true);
@@ -95,7 +95,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
                   </button>
 
                   <button
-                    className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
                     onClick={() => {
                       setShowModal(false);
                       setShowUploadModal(true);
@@ -116,8 +116,8 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
           <Link
             href="/files"
             className={`flex items-center gap-3 px-4 py-2.5 rounded-full ${pathname === "/"
-              ? "text-red-600 bg-red-50"
-              : "text-gray-700 hover:text-red-600 hover:bg-red-50"
+              ? "text-gray-900 bg-gray-100"
+              : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
               }`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,8 +128,8 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
           <Link
             href="/ocr"
             className={`flex items-center gap-3 px-4 py-2.5 rounded-full ${pathname === "/ocr"
-              ? "text-red-600 bg-red-50"
-              : "text-gray-700 hover:text-red-600 hover:bg-red-50"
+              ? "text-gray-900 bg-gray-100"
+              : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
               }`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,8 +140,8 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
           <Link
             href="/recent"
             className={`flex items-center gap-3 px-4 py-2.5 rounded-full ${pathname === "/recent"
-              ? "text-red-600 bg-red-50"
-              : "text-gray-700 hover:text-red-600 hover:bg-red-50"
+              ? "text-gray-900 bg-gray-100"
+              : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
               }`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -152,8 +152,8 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
           <Link
             href="/trash"
             className={`flex items-center gap-3 px-4 py-2.5 rounded-full ${pathname === "/trash"
-              ? "text-red-600 bg-red-50"
-              : "text-gray-700 hover:text-red-600 hover:bg-red-50"
+              ? "text-gray-900 bg-gray-100"
+              : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
               }`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -190,15 +190,15 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
                 onChange={handleFileSelect}
               />
               <div
-                className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer mb-4 ${selectedFiles.length > 0 ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-red-400'}`}
+                className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer mb-4 ${selectedFiles.length > 0 ? 'border-gray-600 bg-gray-100' : 'border-gray-300 hover:border-gray-500'}`}
                 onClick={() => fileInputRef.current?.click()}
               >
-                <svg className={`w-10 h-10 mx-auto mb-2 ${selectedFiles.length > 0 ? 'text-red-500' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className={`w-10 h-10 mx-auto mb-2 ${selectedFiles.length > 0 ? 'text-gray-600' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
                 {selectedFiles.length > 0 ? (
                   <div>
-                    <p className="text-sm font-semibold text-red-600 mb-1">เลือกแล้ว {selectedFiles.length} ไฟล์</p>
+                    <p className="text-sm font-semibold text-gray-900 mb-1">เลือกแล้ว {selectedFiles.length} ไฟล์</p>
                     <p className="text-xs text-gray-500">คลิกเพื่อเพิ่มไฟล์</p>
                   </div>
                 ) : (
@@ -219,7 +219,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
                       </div>
                       <button
                         onClick={() => removeFile(index)}
-                        className="text-gray-400 hover:text-red-500"
+                        className="text-gray-400 hover:text-gray-600"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -241,7 +241,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
               <button
                 onClick={handleUpload}
                 disabled={selectedFiles.length === 0}
-                className={`flex-1 px-4 py-2 text-white rounded-lg font-medium transition-all duration-200 ${selectedFiles.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-[#A61919] to-[#FF7B7B] hover:bg-red-700 hover:shadow-lg hover:scale-105'}`}
+                className={`flex-1 px-4 py-2 text-white rounded-lg font-medium transition-all duration-200 ${selectedFiles.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-[#111827] to-[#6B7280] hover:bg-black hover:shadow-lg hover:scale-105'}`}
               >
                 อัปโหลด
               </button>
@@ -275,7 +275,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
                 value={folderName}
                 onChange={(e) => setFolderName(e.target.value)}
                 placeholder="กรุณาระบุชื่อโฟลเดอร์"
-                className="w-full px-3 py-2 border text-gray-400 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full px-3 py-2 border text-gray-400 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600 focus:border-transparent"
                 autoFocus
               />
             </div>
@@ -292,7 +292,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
               </button>
               <button
                 onClick={handleCreateFolder}
-                className="flex-1 px-4 py-2 text-white bg-gradient-to-r from-[#A61919] to-[#FF7B7B] hover:bg-red-700 hover:shadow-lg hover:scale-105 rounded-lg font-medium transition-all duration-200"
+                className="flex-1 px-4 py-2 text-white bg-gradient-to-r from-[#111827] to-[#6B7280] hover:bg-black hover:shadow-lg hover:scale-105 rounded-lg font-medium transition-all duration-200"
               >
                 สร้าง
               </button>

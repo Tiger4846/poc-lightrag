@@ -1,10 +1,12 @@
 # Production Docker Compose Configuration
 # Usage: docker compose -f docker-compose.prod.yml up -d
 
+name: lightrag-directory
+
 services:
   db:
     image: postgres:16-alpine
-    container_name: swu_postgres_prod
+    container_name: lightrag_postgres_prod
     restart: always
     environment:
       # Override these in production .env or via environment variables
@@ -23,7 +25,7 @@ services:
 
   redis:
     image: redis:alpine
-    container_name: swu_redis_prod
+    container_name: lightrag_redis_prod
     restart: always
     volumes:
       - redis_data:/data
@@ -36,7 +38,7 @@ services:
       - app_network
 
   app:
-    container_name: swu_app_prod
+    container_name: lightrag_app_prod
     build:
       context: .
       dockerfile: Dockerfile

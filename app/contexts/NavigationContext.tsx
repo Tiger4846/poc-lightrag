@@ -26,14 +26,14 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   // ฟังก์ชันดึงข้อมูลไฟล์จาก API
   const refreshFiles = async () => {
     try {
-      const token = localStorage.getItem('directoryToken');
+      const token = localStorage.getItem('lightragDirectoryToken');
       if (!token) {
         Swal.fire({
           icon: 'error',
           title: 'กรุณาเข้าสู่ระบบ',
           text: 'คุณต้องเข้าสู่ระบบก่อนเข้าถึงหน้านี้',
         });
-        window.location.href = '/directory/login';
+        window.location.href = '/lightrag-directory/login';
         return;
       }
 

@@ -2,7 +2,7 @@ import api from "../axios";
 
 // Helper to get token
 const getAuthHeaders = () => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('directoryToken') : null;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('lightragDirectoryToken') : null;
     return {
         headers: {
             'Authorization': token ? `Bearer ${token}` : '',
@@ -19,7 +19,7 @@ export const fileService = {
 
     // Upload files
     uploadFile: async (formData: FormData) => {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('directoryToken') : null;
+        const token = typeof window !== 'undefined' ? localStorage.getItem('lightragDirectoryToken') : null;
         const response = await api.post('/api/files/upload', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',

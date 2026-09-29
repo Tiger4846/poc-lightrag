@@ -3,16 +3,17 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: "standalone",
 
-  basePath: "/directory",
-  assetPrefix: "/directory/",
+  basePath: "/lightrag-directory",
+  assetPrefix: "/lightrag-directory/",
 
   images: {
     unoptimized: true,
   },
 
-  // Use Turbopack (Next.js 16 default)
-  // Empty config to silence the migration warning
-  turbopack: {},
+  // Keep Turbopack scoped to this project instead of the parent workspace.
+  turbopack: {
+    root: process.cwd(),
+  },
 };
 
 export default nextConfig;

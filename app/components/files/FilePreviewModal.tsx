@@ -93,7 +93,7 @@ export default function FilePreviewModal({ file, onClose }: FilePreviewModalProp
                 <div className="flex-1 overflow-auto bg-gray-50 flex items-center justify-center p-4 min-h-[300px]">
                     {loading ? (
                         <div className="flex flex-col items-center gap-3">
-                            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-500"></div>
+                            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gray-700"></div>
                             <span className="text-gray-500">กำลังโหลดตัวอย่าง...</span>
                         </div>
                     ) : error ? (
@@ -101,7 +101,7 @@ export default function FilePreviewModal({ file, onClose }: FilePreviewModalProp
                             <svg className="w-16 h-16 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                             </svg>
-                            <p className="text-red-500 mb-2">{error}</p>
+                            <p className="text-gray-600 mb-2">{error}</p>
                         </div>
                     ) : previewUrl ? (
                         <>
@@ -120,8 +120,8 @@ export default function FilePreviewModal({ file, onClose }: FilePreviewModalProp
                             {isAudio && (
                                 <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-sm border border-gray-200">
                                     <div className="mb-4 flex justify-center">
-                                        <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center">
-                                            <svg className="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
+                                            <svg className="w-8 h-8 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                                             </svg>
                                         </div>
@@ -171,7 +171,7 @@ export default function FilePreviewModal({ file, onClose }: FilePreviewModalProp
                         <a
                             href={previewUrl}
                             download={file.name}
-                            className="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2"
+                            className="px-4 py-2 bg-gray-700 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2"
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />

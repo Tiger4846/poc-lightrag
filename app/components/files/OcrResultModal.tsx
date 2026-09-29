@@ -123,7 +123,7 @@ export default function OcrResultModal({ file, onClose, onUpdate }: OcrResultMod
                 onClick={e => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gradient-to-r from-[#A61919] to-[#FF7B7B]">
+                <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gradient-to-r from-[#111827] to-[#6B7280]">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
                             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -149,7 +149,7 @@ export default function OcrResultModal({ file, onClose, onUpdate }: OcrResultMod
                 <div className="flex-1 overflow-auto bg-gray-50 p-6 min-h-[400px]">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center h-full gap-3">
-                            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-red-500"></div>
+                            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gray-600"></div>
                             <span className="text-gray-500">กำลังโหลดผลลัพธ์ OCR...</span>
                         </div>
                     ) : error ? (
@@ -168,7 +168,7 @@ export default function OcrResultModal({ file, onClose, onUpdate }: OcrResultMod
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
                                     </svg>
                                     <span className="text-sm font-medium text-gray-700">Markdown Content</span>
-                                    {isEditing && <span className="text-xs text-orange-500 font-bold ml-2">(Editing)</span>}
+                                    {isEditing && <span className="text-xs text-gray-700 font-bold ml-2">(Editing)</span>}
                                 </div>
                                 {!isEditing && (
                                     <button
@@ -213,7 +213,7 @@ export default function OcrResultModal({ file, onClose, onUpdate }: OcrResultMod
                     <div className="flex items-center gap-2">
                         <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${file.ocr_status === 'SUCCESS' ? 'bg-green-100 text-green-800' :
                             file.ocr_status === 'PENDING' ? 'bg-blue-100 text-blue-800' :
-                                file.ocr_status === 'FAILED' ? 'bg-red-100 text-red-800' :
+                                file.ocr_status === 'FAILED' ? 'bg-gray-200 text-gray-900' :
                                     'bg-yellow-100 text-yellow-800'
                             }`}>
                             {file.ocr_status === 'SUCCESS' ? '✓ OCR เสร็จแล้ว' :
@@ -229,7 +229,7 @@ export default function OcrResultModal({ file, onClose, onUpdate }: OcrResultMod
                                     <button
                                         onClick={handleDeleteFromLightRag}
                                         disabled={uploading}
-                                        className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+                                        className="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-black transition-colors flex items-center gap-2 disabled:opacity-50"
                                     >
                                         {uploading ? (
                                             <>
@@ -277,7 +277,7 @@ export default function OcrResultModal({ file, onClose, onUpdate }: OcrResultMod
                                         navigator.clipboard.writeText(markdownContent);
                                         alert('คัดลอกแล้ว!');
                                     }}
-                                    className="px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2"
+                                    className="px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-900 transition-colors flex items-center gap-2"
                                 >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />

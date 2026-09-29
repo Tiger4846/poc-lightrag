@@ -25,7 +25,7 @@ export default function LoginPage() {
       if (response.status === 200 || response.data.status === 200) {
         // เก็บ token และ userId ใน localStorage
         if (response.data.token) {
-          localStorage.setItem('directoryToken', response.data.token);
+            localStorage.setItem('lightragDirectoryToken', response.data.token);
           localStorage.setItem('userId', response.data.userId);
           localStorage.setItem('userName', response.data.name);
         }
@@ -62,7 +62,7 @@ export default function LoginPage() {
       ยังไม่มีบัญชี?{" "}
       <Link
         href="/signup"
-        className="font-semibold leading-6 text-red-600 hover:text-red-500"
+        className="font-semibold leading-6 text-gray-900 hover:text-gray-600"
       >
         สมัครสมาชิก
       </Link>
@@ -70,7 +70,7 @@ export default function LoginPage() {
   );
 
   useEffect(() => {
-    const token = localStorage.getItem("directoryToken");
+    const token = localStorage.getItem("lightragDirectoryToken");
 
     if (token) {
       router.replace("/files");
@@ -95,7 +95,7 @@ export default function LoginPage() {
               type="email"
               autoComplete="email"
               required
-              className="relative block w-full rounded-t-md border-0 p-2.5 md:p-3 text-sm md:text-base text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-red-600"
+              className="relative block w-full rounded-t-md border-0 p-2.5 md:p-3 text-sm md:text-base text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-gray-900"
               placeholder="อีเมล"
               onChange={handleInputChange}
             />
@@ -110,7 +110,7 @@ export default function LoginPage() {
               type="password"
               autoComplete="current-password"
               required
-              className="relative block w-full rounded-b-md border-0 p-2.5 md:p-3 text-sm md:text-base text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-red-600"
+              className="relative block w-full rounded-b-md border-0 p-2.5 md:p-3 text-sm md:text-base text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-gray-900"
               placeholder="รหัสผ่าน"
               onChange={handleInputChange}
             />
@@ -123,7 +123,7 @@ export default function LoginPage() {
               id="remember-me"
               name="remember-me"
               type="checkbox"
-              className="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-600"
+              className="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
               onChange={handleInputChange}
             />
             <label
@@ -137,7 +137,7 @@ export default function LoginPage() {
           <div className="text-sm">
             <a
               href="#"
-              className="font-medium text-red-600 hover:text-red-500"
+              className="font-medium text-gray-900 hover:text-gray-600"
             >
               ลืมรหัสผ่าน?
             </a>
@@ -147,7 +147,7 @@ export default function LoginPage() {
         <div>
           <button
             type="submit"
-            className="group relative flex w-full justify-center rounded-md bg-red-600 px-3 py-2.5 md:py-3 text-sm font-semibold text-white hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+            className="group relative flex w-full justify-center rounded-md bg-gray-900 px-3 py-2.5 md:py-3 text-sm font-semibold text-white hover:bg-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
           >
             เข้าสู่ระบบ
           </button>

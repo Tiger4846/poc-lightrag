@@ -23,7 +23,7 @@ export default function Breadcrumb() {
           d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
         />
       </svg>
-      <button onClick={() => router.push('/files')} className="hover:text-red-600 whitespace-nowrap">
+      <button onClick={() => router.push('/files')} className="hover:text-gray-900 whitespace-nowrap">
         โฟลเดอร์ของฉัน
       </button>
       {currentPath.map((folderName, index) => {
@@ -44,7 +44,7 @@ export default function Breadcrumb() {
             <span>/</span>
             <button
               onClick={() => folderId && router.push(`/files?folderId=${folderId}`)}
-              className="hover:text-red-600 whitespace-nowrap max-w-[100px] md:max-w-none truncate"
+              className="hover:text-gray-900 whitespace-nowrap max-w-[100px] md:max-w-none truncate"
             >
               {folderName}
             </button>

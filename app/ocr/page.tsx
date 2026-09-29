@@ -109,7 +109,7 @@ export default function OcrPage() {
             text: `จะทำ OCR ไฟล์ที่รอดำเนินการทั้งหมด ${ocrStatus.ocrPending} ไฟล์`,
             icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#A61919',
+            confirmButtonColor: '#111827',
             cancelButtonColor: '#9ca3af',
             confirmButtonText: 'เริ่ม OCR',
             cancelButtonText: 'ยกเลิก'
@@ -143,7 +143,7 @@ export default function OcrPage() {
                             <p style="color: #dc2626;">ผิดพลาด: <strong>${data.results?.filter((r: any) => r.status === 'error').length || 0}</strong></p>
                         </div>
                     `,
-                    confirmButtonColor: '#A61919',
+                    confirmButtonColor: '#111827',
                 });
 
             } catch (error: any) {
@@ -186,7 +186,7 @@ export default function OcrPage() {
                         <p><strong>${file.name}</strong></p>
                     </div>
                 `,
-                confirmButtonColor: '#A61919',
+                confirmButtonColor: '#111827',
             });
 
         } catch (error: any) {
@@ -220,7 +220,7 @@ export default function OcrPage() {
                 icon: 'success',
                 title: 'อัปโหลดสำเร็จ!',
                 text: 'ไฟล์ถูกส่งไปที่ LightRAG แล้ว',
-                confirmButtonColor: '#A61919',
+                confirmButtonColor: '#111827',
                 timer: 2000
             });
 
@@ -266,7 +266,7 @@ export default function OcrPage() {
                     icon: 'success',
                     title: 'ลบสำเร็จ!',
                     text: 'ไฟล์ถูกลบออกจาก LightRAG แล้ว',
-                    confirmButtonColor: '#A61919',
+                    confirmButtonColor: '#111827',
                     timer: 2000
                 });
 
@@ -427,7 +427,7 @@ export default function OcrPage() {
                             <div className="flex gap-1 md:gap-2">
                                 <button
                                     onClick={() => setViewMode("grid")}
-                                    className={`p-1.5 md:p-2 rounded ${viewMode === "grid" ? "text-red-600 bg-red-50" : "text-gray-600 hover:text-red-600 hover:bg-red-50"}`}
+                                    className={`p-1.5 md:p-2 rounded ${viewMode === "grid" ? "text-gray-900 bg-gray-100" : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"}`}
                                 >
                                     <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -435,7 +435,7 @@ export default function OcrPage() {
                                 </button>
                                 <button
                                     onClick={() => setViewMode("list")}
-                                    className={`p-1.5 md:p-2 rounded ${viewMode === "list" ? "text-red-600 bg-red-50" : "text-gray-600 hover:text-red-600 hover:bg-red-50"}`}
+                                    className={`p-1.5 md:p-2 rounded ${viewMode === "list" ? "text-gray-900 bg-gray-100" : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"}`}
                                 >
                                     <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -475,7 +475,7 @@ export default function OcrPage() {
                                                 <button
                                                     onClick={handleOcrAllFiles}
                                                     disabled={isProcessingOcr}
-                                                    className="w-full md:w-auto px-6 py-3 bg-white text-[#A61919] rounded-xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                                    className="w-full md:w-auto px-6 py-3 bg-white text-[#111827] rounded-xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                                 >
                                                     {isProcessingOcr ? (
                                                         <>
@@ -544,8 +544,8 @@ export default function OcrPage() {
                                         </div>
 
                                         {/* Failed */}
-                                        <div className="bg-red-500/20 text-start rounded-lg p-3 border border-red-500 h-full">
-                                            <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+                                        <div className="bg-gray-600/20 text-start rounded-lg p-3 border border-gray-600 h-full">
+                                            <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
                                                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                                 </svg>
@@ -568,7 +568,7 @@ export default function OcrPage() {
                             <select
                                 value={sortBy}
                                 onChange={(e) => setSortBy(e.target.value)}
-                                className="px-2 md:px-3 py-1 md:py-1.5 text-xs md:text-sm border border-gray-300 rounded-md bg-white text-gray-700 outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
+                                className="px-2 md:px-3 py-1 md:py-1.5 text-xs md:text-sm border border-gray-300 rounded-md bg-white text-gray-700 outline-none focus:ring-2 focus:ring-gray-600/20 focus:border-gray-600"
                             >
                                 <option value="default">เรียง (Default)</option>
                                 <option value="name">ชื่อ</option>
@@ -633,7 +633,7 @@ export default function OcrPage() {
                                                     <div className="flex flex-col gap-1">
                                                         <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium shadow-sm ${file.ocr_status === 'SUCCESS' ? 'bg-green-100 text-green-800 border border-green-200' :
                                                             file.ocr_status === 'PENDING' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
-                                                                file.ocr_status === 'FAILED' ? 'bg-red-100 text-red-800 border border-red-200' :
+                                                                file.ocr_status === 'FAILED' ? 'bg-gray-200 text-gray-900 border border-gray-300' :
                                                                     'bg-yellow-100 text-yellow-800 border border-yellow-200'
                                                             }`}>
                                                             {file.ocr_status === 'SUCCESS' ? '✓ OCR' :
@@ -655,7 +655,7 @@ export default function OcrPage() {
                                                             e.stopPropagation();
                                                             handleOcrSingleFile(file);
                                                         }}
-                                                        className="absolute bottom-2 right-2 px-3 py-1.5 bg-gradient-to-r from-[#A61919] to-[#FF7B7B] text-white text-xs rounded-lg hover:shadow-lg transition-all opacity-0 group-hover:opacity-100"
+                                                        className="absolute bottom-2 right-2 px-3 py-1.5 bg-gradient-to-r from-[#111827] to-[#6B7280] text-white text-xs rounded-lg hover:shadow-lg transition-all opacity-0 group-hover:opacity-100"
                                                     >
                                                         {file.ocr_status === 'FAILED' ? 'ลองใหม่' : 'OCR'}
                                                     </button>
@@ -683,8 +683,8 @@ export default function OcrPage() {
                                                     <tr key={index} className="hover:bg-gray-50 cursor-pointer" onClick={() => setPreviewFile(file)}>
                                                         <td className="px-6 py-4">
                                                             <div className="flex items-center gap-3">
-                                                                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                                                    <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                                    <svg className="w-5 h-5 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                                     </svg>
                                                                 </div>
@@ -696,7 +696,7 @@ export default function OcrPage() {
                                                         <td className="px-6 py-4">
                                                             <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${file.ocr_status === 'SUCCESS' ? 'bg-green-100 text-green-800' :
                                                                 file.ocr_status === 'PENDING' ? 'bg-blue-100 text-blue-800' :
-                                                                    file.ocr_status === 'FAILED' ? 'bg-red-100 text-red-800' :
+                                                                    file.ocr_status === 'FAILED' ? 'bg-gray-200 text-gray-900' :
                                                                         'bg-yellow-100 text-yellow-800'
                                                                 }`}>
                                                                 {file.ocr_status === 'SUCCESS' ? (
@@ -739,7 +739,7 @@ export default function OcrPage() {
                                                                                 e.stopPropagation();
                                                                                 handleDeleteFromLightRag(file);
                                                                             }}
-                                                                            className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                                                                            className="p-1.5 text-gray-900 hover:bg-gray-100 rounded transition-colors"
                                                                             title="Delete from LightRAG"
                                                                         >
                                                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -784,7 +784,7 @@ export default function OcrPage() {
                                                                         disabled={file.ocr_status === 'PENDING'}
                                                                         className={`px-4 py-1.5 text-white text-sm rounded-lg font-medium transition-all duration-200 inline-flex items-center gap-1 ${file.ocr_status === 'PENDING'
                                                                             ? 'bg-gray-400 cursor-not-allowed'
-                                                                            : 'bg-gradient-to-r from-[#A61919] to-[#FF7B7B] hover:shadow-lg hover:scale-105'
+                                                                            : 'bg-gradient-to-r from-[#111827] to-[#6B7280] hover:shadow-lg hover:scale-105'
                                                                             }`}
                                                                     >
                                                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

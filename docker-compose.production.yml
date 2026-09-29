@@ -1,6 +1,8 @@
+name: lightrag-directory
+
 services:
   app:
-    container_name: swu_directory_app
+    container_name: lightrag_directory_app
     image: ${REGISTRY_PATH}/${IMAGE_NAME}:${IMAGE_VERSION}
     build:
       context: .

@@ -20,8 +20,8 @@ export default function AuthLayout({
         <div className="text-center">
           <div className="flex justify-center mb-3 md:mb-4">
             <Image
-              src="/swu_logo.png"
-              alt="SWU Logo"
+              src="/lightrag-directory/project-logo.svg"
+              alt="Light Rag logo"
               width={120}
               height={120}
               className="h-auto w-20 md:w-[120px]"

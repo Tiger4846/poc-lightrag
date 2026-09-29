@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "SWU Directory - มหาวิทยาลัยศรีนครินทรวิโรฒ",
-  description: "ระบบจัดการโฟลเดอร์และไฟล์",
+  title: "Light Rag Directory",
+  description: "ระบบจัดการเอกสารและไฟล์",
   icons: {
-    icon: '/swu_logo.webp',
+    icon: '/lightrag-directory/project-logo.svg',
   },
 };
 
