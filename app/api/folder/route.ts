@@ -19,7 +19,7 @@ export async function POST(req: Request) {
 
         const user = await prisma.dir_User.findUnique({ 
             where: { id: userId },
-            select: { id: true, role: true }
+            select: { id: true }
         });
         
         if (!user) {
@@ -29,13 +29,6 @@ export async function POST(req: Request) {
             );
         }
 
-
-        if (user.role !== 'ADMIN') {
-            return NextResponse.json(
-                { message: "เฉพาะผู้ดูแลระบบเท่านั้นที่สามารถสร้างโฟลเดอร์ได้" },
-                { status: 403 }
-            );
-        }
 
         const data = await req.json();
         console.log("Received folder data:", data);

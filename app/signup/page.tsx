@@ -68,7 +68,7 @@ export default function SignupPage() {
           showConfirmButton: false,
           timer: 1500
         }).then(() => {
-          window.location.href = "/login";
+          window.location.href = "/lightrag-directory/login";
         });
       }
       else {

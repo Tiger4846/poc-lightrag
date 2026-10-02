@@ -43,7 +43,7 @@ export async function POST(
 
         if (file.lightragStatus !== 'UPLOADED') {
             return NextResponse.json(
-                { message: "File is not uploaded to LightRAG" },
+                { message: "ไฟล์นี้ยังไม่ได้ถูกเพิ่มเข้าคลังเอกสาร" },
                 { status: 400 }
             );
         }
@@ -101,7 +101,7 @@ export async function POST(
 
         if (!docId) {
             return NextResponse.json(
-                { message: "Could not find Document ID in LightRAG. It might have been deleted already." },
+                { message: "ไม่พบรหัสเอกสาร อาจถูกลบไปแล้ว" },
                 { status: 404 }
             );
         }
@@ -123,7 +123,7 @@ export async function POST(
 
             if (status === 'busy') {
                 return NextResponse.json(
-                    { message: "LightRAG is busy. " + message },
+                    { message: "ระบบกำลังประมวลผลอยู่: " + message },
                     { status: 503 } // Service Unavailable/Busy
                 );
             }
@@ -146,7 +146,7 @@ export async function POST(
 
             // Fallback
             return NextResponse.json({
-                message: "Unexpected response from LightRAG delete API",
+                message: "ได้รับผลลัพธ์ที่ไม่คาดคิดจากการลบเอกสาร",
                 data: deleteResponse.data
             }, { status: 500 });
 
@@ -155,7 +155,7 @@ export async function POST(
             console.error("LightRAG Delete API error:", error?.response?.data || error.message);
             return NextResponse.json(
                 {
-                    message: "Failed to delete from LightRAG",
+                    message: "ไม่สามารถลบไฟล์ออกจากคลังเอกสารได้",
                     error: error?.response?.data || error.message
                 },
                 { status: error?.response?.status || 500 }

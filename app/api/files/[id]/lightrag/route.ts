@@ -43,7 +43,7 @@ export async function POST(
 
         if (file.type !== "FILE") {
             return NextResponse.json(
-                { message: "Cannot upload a folder to LightRAG" },
+                { message: "ไม่สามารถเพิ่มโฟลเดอร์เข้าคลังเอกสารได้" },
                 { status: 400 }
             );
         }
@@ -70,7 +70,7 @@ export async function POST(
             // But let's stick to the request: "send markdown file".
             if (!['.txt', '.md', '.markdown'].includes(path.extname(file.name).toLowerCase())) {
                 return NextResponse.json(
-                    { message: "File must be processed by OCR first or be a text file." },
+                    { message: "กรุณาทำ OCR ให้เสร็จก่อน หรือเลือกไฟล์ข้อความ (.txt, .md)" },
                     { status: 400 }
                 );
             }
@@ -109,7 +109,7 @@ export async function POST(
             });
 
             return NextResponse.json({
-                message: "Uploaded to LightRAG successfully",
+                message: "เพิ่มไฟล์เข้าคลังเอกสารสำเร็จ",
                 data: response.data
             }, { status: 200 });
 
@@ -117,7 +117,7 @@ export async function POST(
             console.error("LightRAG API error:", error?.response?.data || error.message);
             return NextResponse.json(
                 {
-                    message: "Failed to upload to LightRAG",
+                    message: "ไม่สามารถเพิ่มไฟล์เข้าคลังเอกสารได้",
                     error: error?.response?.data || error.message
                 },
                 { status: error?.response?.status || 500 }

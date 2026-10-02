@@ -75,7 +75,7 @@ export default function PublicFileViewPage() {
             <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-gray-200 rounded-lg">
-                        <img src="/lightrag-directory/project-logo.svg" alt="Light Rag logo" className="w-6 h-6 object-contain" />
+                        <img src="/lightrag-directory/project-logo.svg" alt="Document platform logo" className="w-6 h-6 object-contain" />
                     </div>
                     <h1 className="text-sm font-medium text-gray-700 truncate max-w-[200px] md:max-w-md">
                         {fileInfo?.name || "เอกสารต้นฉบับ"}
@@ -106,7 +106,7 @@ export default function PublicFileViewPage() {
 
             {/* Simple Footer */}
             <footer className="py-4 text-center text-xs text-gray-400">
-                &copy; {new Date().getFullYear()} Lightrag Directory. All rights reserved.
+                &copy; {new Date().getFullYear()} Document Platform. All rights reserved.
             </footer>
         </div>
     );

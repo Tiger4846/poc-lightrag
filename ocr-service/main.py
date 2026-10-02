@@ -10,6 +10,7 @@ print(f"📂 .env exists: {env_path.exists()}")
 
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.concurrency import run_in_threadpool
 from typhoon_ocr import ocr_document
 import tempfile
 import uvicorn
@@ -193,6 +194,50 @@ def ocr_with_ollama(file_path: str) -> str:
     )
 
 
+def process_ocr_file(tmp_path: str, ext: str) -> tuple[str, int]:
+    """Run blocking PDF/image OCR work outside FastAPI's event loop."""
+    logger.info("🔍 Starting OCR...")
+    logger.info("⏳ This may take a while for large files...")
+
+    page_count = 1
+    markdown = ""
+
+    if ext == '.pdf':
+        logger.info("📄 PDF detected, converting to images...")
+        try:
+            images = convert_from_path(tmp_path)
+            page_count = len(images)
+            logger.info(f"📄 PDF has {page_count} pages")
+
+            results = []
+            for i, image in enumerate(images):
+                image_path = f"{tmp_path}_{i}.jpg"
+                image.save(image_path, "JPEG")
+                logger.info(f"🔍 Processing Page {i + 1}/{page_count}...")
+
+                if OCR_MODE == "local":
+                    text = ocr_with_ollama(image_path)
+                else:
+                    text = ocr_with_typhoon_api(image_path)
+
+                results.append(f"## Page {i + 1}\n\n{text}")
+
+                if os.path.exists(image_path):
+                    os.unlink(image_path)
+
+            markdown = "\n\n---\n\n".join(results)
+        except Exception as pdf_err:
+            logger.error(f"❌ PDF Processing Error: {pdf_err}")
+            raise
+    else:
+        if OCR_MODE == "local":
+            markdown = ocr_with_ollama(tmp_path)
+        else:
+            markdown = ocr_with_typhoon_api(tmp_path)
+
+    return markdown, page_count
+
+
 @app.get("/health")
 async def health_check():
     """Health check with OCR status"""
@@ -256,45 +301,8 @@ async def perform_ocr(file: UploadFile = File(...)):
         logger.info(f"📁 Temp file saved: {tmp_path}")
         logger.info(f"📊 File size: {len(content)} bytes")
         
-        # Perform OCR based on mode
-        logger.info(f"🔍 Starting OCR...")
-        logger.info(f"⏳ This may take a while for large files...")
-        
-        page_count = 1
-        markdown = ""
-        
-        if ext == '.pdf':
-             logger.info("📄 PDF detected, converting to images...")
-             try:
-                 images = convert_from_path(tmp_path)
-                 page_count = len(images)
-                 logger.info(f"📄 PDF has {page_count} pages")
-                 
-                 results = []
-                 for i, image in enumerate(images):
-                     image_path = f"{tmp_path}_{i}.jpg"
-                     image.save(image_path, "JPEG")
-                     logger.info(f"🔍 Processing Page {i+1}/{page_count}...")
-                     
-                     if OCR_MODE == "local":
-                         text = ocr_with_ollama(image_path)
-                     else:
-                         text = ocr_with_typhoon_api(image_path)
-                     
-                     results.append(f"## Page {i+1}\n\n{text}")
-                     
-                     if os.path.exists(image_path):
-                        os.unlink(image_path)
-                        
-                 markdown = "\n\n---\n\n".join(results)
-             except Exception as pdf_err:
-                 logger.error(f"❌ PDF Processing Error: {pdf_err}")
-                 raise pdf_err
-        else:
-            if OCR_MODE == "local":
-                markdown = ocr_with_ollama(tmp_path)
-            else:
-                markdown = ocr_with_typhoon_api(tmp_path)
+        # Run blocking OCR work in a thread so /health remains responsive.
+        markdown, page_count = await run_in_threadpool(process_ocr_file, tmp_path, ext)
         
         logger.info(f"✅ OCR completed successfully!")
         logger.debug(f"📝 Result length: {len(markdown) if markdown else 0} characters")

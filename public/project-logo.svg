@@ -1,6 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 96" role="img" aria-labelledby="title desc">
-  <title id="title">Light Rag</title>
-  <desc id="desc">Light Rag logo</desc>
-  <rect width="240" height="96" rx="24" fill="#f3f4f6"/>
-  <text x="120" y="63" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700" letter-spacing="-2" fill="#111827">Light Rag</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Document platform logo</title>
+  <desc id="desc">Neutral document platform logo</desc>
+  <rect width="128" height="128" rx="28" fill="#f3f4f6"/>
+  <path d="M35 43a8 8 0 0 1 8-8h20l9 9h13a8 8 0 0 1 8 8v30a8 8 0 0 1-8 8H43a8 8 0 0 1-8-8V43Z" fill="#4b5563"/>
+  <path d="M48 61h32M48 72h22" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
 </svg>

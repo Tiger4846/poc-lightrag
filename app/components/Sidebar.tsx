@@ -50,7 +50,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
             <div className="w-12 h-12 flex-shrink-0">
               <Image
                 src="/lightrag-directory/project-logo.svg"
-                alt="Light Rag logo"
+                alt="Document platform logo"
                 width={48}
                 height={48}
                 className="w-full h-full object-contain"
@@ -58,9 +58,8 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
             </div>
             <div className="text-xs md:text-sm">
               <div>
-                <span className="font-semibold text-gray-600 hidden sm:inline">Light Rag</span>
-                <span className="font-semibold text-gray-600 sm:hidden">Light Rag</span>
-                <span className="whitespace-nowrap text-[10px] font-semibold text-gray-600 hidden md:inline"> DOCUMENT PLATFORM</span>
+                <span className="font-semibold text-gray-600 hidden sm:inline">DOCUMENT PLATFORM</span>
+                <span className="font-semibold text-gray-600 sm:hidden">DOCUMENTS</span>
               </div>
             </div>
           </div>

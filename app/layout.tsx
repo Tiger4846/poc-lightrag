@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Light Rag Directory",
+  title: "Document Platform",
   description: "ระบบจัดการเอกสารและไฟล์",
   icons: {
     icon: '/lightrag-directory/project-logo.svg',

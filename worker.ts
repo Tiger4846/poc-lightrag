@@ -119,6 +119,17 @@ worker.on('completed', (job) => {
 
 worker.on('failed', (job, err) => {
     console.error(`[Job ${job?.id}] Failed with error ${err.message}`);
+
+    if (!job || job.attemptsMade < (job.opts.attempts ?? 1)) {
+        return;
+    }
+
+    void prisma.fileNode.update({
+        where: { id: job.data.fileId },
+        data: { ocrStatus: 'FAILED' },
+    }).catch((updateError) => {
+        console.error(`[Job ${job.id}] Could not update OCR status:`, updateError);
+    });
 });
 
 console.log('👷 OCR Worker is ready and listening for jobs...');

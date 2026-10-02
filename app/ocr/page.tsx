@@ -92,6 +92,22 @@ export default function OcrPage() {
         loadData();
     }, []);
 
+    // Refresh files while OCR jobs are still running so the status does not stay stale.
+    useEffect(() => {
+        const hasActiveOcrJob = files.some(
+            (file) => file.ocr_status === 'PENDING' || file.ocr_status === 'PROCESSING'
+        );
+
+        if (!hasActiveOcrJob) return;
+
+        const intervalId = window.setInterval(() => {
+            void refreshFiles();
+            void fetchOcrStatus();
+        }, 5000);
+
+        return () => window.clearInterval(intervalId);
+    }, [files, refreshFiles]);
+
     const toggleDeleteStatus = async (file: FileItem) => {
         await deleteFileAction(file);
         setOpenMenuIndex(null);
@@ -203,9 +219,20 @@ export default function OcrPage() {
     const handleUploadToLightRag = async (file: FileItem) => {
         if (!file.id) return;
 
+        const isTextFile = /\.(txt|md|markdown)$/i.test(file.name);
+        if (file.ocr_status !== 'SUCCESS' && !isTextFile) {
+            await Swal.fire({
+                icon: 'info',
+                title: 'ต้องทำ OCR ก่อน',
+                text: 'กรุณารอให้ OCR เสร็จ แล้วจึงเพิ่มไฟล์เข้าไปในคลังเอกสาร',
+                confirmButtonColor: '#111827',
+            });
+            return;
+        }
+
         try {
             Swal.fire({
-                title: 'กำลังอัปโหลดไป LightRAG...',
+                title: 'กำลังส่งเข้าไปยังคลังเอกสาร...',
                 html: `ไฟล์: ${file.name}`,
                 allowOutsideClick: false,
                 didOpen: () => {
@@ -219,13 +246,13 @@ export default function OcrPage() {
             Swal.fire({
                 icon: 'success',
                 title: 'อัปโหลดสำเร็จ!',
-                text: 'ไฟล์ถูกส่งไปที่ LightRAG แล้ว',
+                text: 'ไฟล์ถูกส่งเข้าไปยังคลังเอกสารแล้ว',
                 confirmButtonColor: '#111827',
                 timer: 2000
             });
 
         } catch (error: any) {
-            console.error('LightRAG upload error:', error);
+            console.warn('Document upload failed:', error?.response?.data?.message || error);
             Swal.fire({
                 icon: 'error',
                 title: 'เกิดข้อผิดพลาด',
@@ -239,8 +266,8 @@ export default function OcrPage() {
         if (!file.id) return;
 
         const result = await Swal.fire({
-            title: 'ยืนยันการลบจาก LightRAG?',
-            text: `คุณต้องการลบไฟล์ "${file.name}" ออกจากระบบ LightRAG ใช่หรือไม่?`,
+            title: 'ยืนยันการลบจากคลังเอกสาร?',
+            text: `คุณต้องการลบไฟล์ "${file.name}" ออกจากคลังเอกสารใช่หรือไม่?`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
@@ -252,7 +279,7 @@ export default function OcrPage() {
         if (result.isConfirmed) {
             try {
                 Swal.fire({
-                    title: 'กำลังลบจาก LightRAG...',
+                    title: 'กำลังลบออกจากคลังเอกสาร...',
                     allowOutsideClick: false,
                     didOpen: () => {
                         Swal.showLoading();
@@ -265,7 +292,7 @@ export default function OcrPage() {
                 Swal.fire({
                     icon: 'success',
                     title: 'ลบสำเร็จ!',
-                    text: 'ไฟล์ถูกลบออกจาก LightRAG แล้ว',
+                    text: 'ไฟล์ถูกลบออกจากคลังเอกสารแล้ว',
                     confirmButtonColor: '#111827',
                     timer: 2000
                 });
@@ -278,7 +305,7 @@ export default function OcrPage() {
                     Swal.fire({
                         icon: 'warning',
                         title: 'ระบบไม่ว่าง',
-                        text: error?.response?.data?.message || 'LightRAG กำลังประมวลผลอยู่ ไม่สามารถลบได้ในขณะนี้',
+                        text: error?.response?.data?.message || 'ระบบกำลังประมวลผลอยู่ ไม่สามารถลบได้ในขณะนี้',
                     });
                 } else {
                     Swal.fire({
@@ -643,7 +670,7 @@ export default function OcrPage() {
                                                         </span>
                                                         {file.lightrag_status === 'UPLOADED' && (
                                                             <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium shadow-sm bg-purple-100 text-purple-800 border border-purple-200">
-                                                                ⚡ LightRAG
+                                                                ⚡ คลังเอกสาร
                                                             </span>
                                                         )}
                                                     </div>
@@ -740,7 +767,7 @@ export default function OcrPage() {
                                                                                 handleDeleteFromLightRag(file);
                                                                             }}
                                                                             className="p-1.5 text-gray-900 hover:bg-gray-100 rounded transition-colors"
-                                                                            title="Delete from LightRAG"
+                                                                            title="ลบออกจากคลังเอกสาร"
                                                                         >
                                                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -753,7 +780,7 @@ export default function OcrPage() {
                                                                                 handleUploadToLightRag(file);
                                                                             }}
                                                                             className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                                                                            title="Upload to LightRAG"
+                                                                            title="เพิ่มเข้าคลังเอกสาร"
                                                                         >
                                                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />

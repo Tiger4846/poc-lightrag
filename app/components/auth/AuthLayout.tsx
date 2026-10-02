@@ -21,7 +21,7 @@ export default function AuthLayout({
           <div className="flex justify-center mb-3 md:mb-4">
             <Image
               src="/lightrag-directory/project-logo.svg"
-              alt="Light Rag logo"
+              alt="Document platform logo"
               width={120}
               height={120}
               className="h-auto w-20 md:w-[120px]"

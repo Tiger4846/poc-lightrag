@@ -77,10 +77,10 @@ export default function OcrResultModal({ file, onClose, onUpdate }: OcrResultMod
         try {
             setUploading(true);
             await fileService.uploadToLightRag(file.id);
-            alert("Upload to LightRAG successful!");
+            alert("ส่งไฟล์เข้าคลังเอกสารสำเร็จ!");
             if (onUpdate) onUpdate();
         } catch (err: any) {
-            console.error("Error uploading to LightRAG:", err);
+            console.warn("Document upload failed:", err?.response?.data?.message || err);
             alert("Failed to upload: " + (err.response?.data?.message || err.message));
         } finally {
             setUploading(false);
@@ -90,16 +90,16 @@ export default function OcrResultModal({ file, onClose, onUpdate }: OcrResultMod
     const handleDeleteFromLightRag = async () => {
         if (!file?.id) return;
 
-        if (!confirm("คุณต้องการลบไฟล์นี้ออกจาก LightRAG ใช่หรือไม่?")) return;
+        if (!confirm("คุณต้องการลบไฟล์นี้ออกจากคลังเอกสารใช่หรือไม่?")) return;
 
         try {
             setUploading(true); // Reuse uploading state for loading indicator
             await fileService.deleteFromLightRag(file.id);
-            alert("Delete from LightRAG successful!");
+            alert("ลบไฟล์ออกจากคลังเอกสารสำเร็จ!");
             if (onUpdate) onUpdate();
             onClose(); // Close modal after delete
         } catch (err: any) {
-            console.error("Error deleting from LightRAG:", err);
+            console.warn("Document delete failed:", err?.response?.data?.message || err);
             if (err?.response?.status === 503 || err?.response?.status === 409) {
                 alert("ระบบไม่ว่าง: " + (err.response?.data?.message || err.message));
             } else {
@@ -244,7 +244,7 @@ export default function OcrResultModal({ file, onClose, onUpdate }: OcrResultMod
                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                 </svg>
-                                                Delete from LightRAG
+                                                ลบออกจากคลังเอกสาร
                                             </>
                                         )}
                                     </button>
@@ -267,7 +267,7 @@ export default function OcrResultModal({ file, onClose, onUpdate }: OcrResultMod
                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                                                 </svg>
-                                                Upload to LightRAG
+                                                เพิ่มเข้าคลังเอกสาร
                                             </>
                                         )}
                                     </button>
